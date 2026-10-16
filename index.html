@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-16 18:09">
+<meta name="build-time" content="2026-10-16 18:13">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 18:09</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 18:13</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -579,7 +579,7 @@ tbody tr.total-row:hover{background:#ede9fe}
       <div class="sf-item"><b>② 商品分析.xlsx（可选）</b>商品/销售分析导出（系统下单/建议下单/库存/上架天数）<input type="file" id="sheinF2" accept=".xlsx,.xls">
         <div style="margin-top:10px;padding-top:8px;border-top:1px dashed var(--border)"><b>导入曝光数据截图</b>（流量不支持导出，截图仅本机存档，数字请录下方②-C表）<input type="file" id="sheinImg" accept="image/*"><span class="mut" id="sheinImgName"></span></div>
       </div>
-      <div class="sf-item sf-auto"><b>③ 本地库存（自动读取·已内嵌）</b>来自《进销存统计表(5.15优化)》库存银行，按品名→供货方号映射，无需上传。库存更新后告诉我重新内嵌即可。<input type="file" id="sheinF3" accept=".xlsx,.xls" title="一般无需上传；仅当你要用其他本地库存表覆盖时使用"></div>
+      <div class="sf-item sf-auto" id="sfgLocalNote"><b>③ 本地库存（实时同步）</b>来自《进销存统计表(5.15优化)》库存银行，按品名→供货方号映射，无需上传。在软件内打开页面时自动读取最新库存并刷新补货计算（纯浏览器/GitHub 版为构建时快照）。<input type="file" id="sheinF3" accept=".xlsx,.xls" title="一般无需上传；仅当你要用其他本地库存表覆盖时使用"></div>
       <div class="sf-item"><b>④ 备货信息.xlsx（可选·覆盖内嵌）</b>系统下单数/建议下单数/SHEIN仓库存/可售天数/上架天数/近30天销量（已内嵌 10-16 导出的 102 SKU 聚合）<input type="file" id="sheinF4" accept=".xlsx,.xls"></div>
     </div>
     <div class="sf-actions">
@@ -3033,7 +3033,8 @@ function render(detail,src){
    +'<br><b>补货口径（结合系统备货信息）</b>：「补货」= <b>找工厂定制的生产量</b>（不是发希音的总量；发希音的货 = 本地调拨 + 新定制）。有系统建议下单量 → <b>以系统建议为锚</b>，并与"触发线：希音仓+在途可售天数<18天（=货期10天+发运入仓5天+安全边际3天）才启动补货，防积压；补货量：补至30天水位，即需求缺口=30×预测日均−希音仓剩余−在途；预测日均=近7天×60%+近30天×40%，卖得慢自动少补"交叉校验，超/欠均标⚠；<b>本地进销存库存已计入</b>：缺口先由本地调拨覆盖，不足的差额才找工厂定制（本地够则新定制为0）。系统限单(下单=0) → 暂不补先促动销；保证在售/停售/低销尾品 → 禁止补；新品无系统单 → 勿盲补。所有表均按 <b>大类→小类</b> 精分。</div>';
 
   // ① 补货数量报告
-  h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary)"></span>① 需要补货的商品数量报告（结合系统备货信息）</h3>';
+  h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #2563eb">一、补货下单 · 跌破18天触发线才补，触发后补至30天水位</h2>';
+h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary)"></span>① 需要补货的商品数量报告（结合系统备货信息）</h3>';
   h+='<div class="card"><table><thead><tr><th>品名/货号</th><th>大类</th><th>小类</th><th>近30天销量</th><th>日均(预测)</th><th>希音仓库存</th><th>在途</th><th>本地库存</th><th>系统建议下单</th><th>需求缺口(30天水位)</th><th>需工厂定制</th><th>本地调拨</th><th>说明 / 交叉校验</th></tr></thead><tbody>';
   var sdet=detail.slice().sort(function(a,b){ return (a.cat===b.cat ? (a.sub===b.sub ? (a.code<b.code?-1:1) : (a.sub<b.sub?-1:1)) : (a.cat<b.cat?-1:1)); });   // 大类→小类→颜色货号：同款各色相邻，逐色下单
   var gcnt={}; sdet.forEach(function(x){ var k=x.cat+'|'+x.sub; gcnt[k]=(gcnt[k]||0)+1; });
@@ -3071,11 +3072,12 @@ function render(detail,src){
     }
     return s;
   }
-  h+='<h3 class="sh" style="font-size:14px">①-A 按小类汇总（生产排单口径）</h3><div class="card"><table><thead><tr><th>小类</th><th>SKU数</th><th>近30天销量</th><th>系统建议下单合计</th><th>我算缺口合计(30天水位)</th><th>建议新补货合计</th><th>本地调拨合计</th></tr></thead><tbody>'+grpRows('sub')+'</tbody></table><div class="sh-note" style="margin-top:6px">⚠ 汇总仅供核对规模；实际下单按①表<b>逐色数量</b>执行——同小类各颜色销量/库存差异大，颜色间不可均摊。</div></div>';
-  h+='<h3 class="sh" style="font-size:14px">①-B 按大类汇总</h3><div class="card"><table><thead><tr><th>大类</th><th>SKU数</th><th>近30天销量</th><th>系统建议下单合计</th><th>我算缺口合计(30天水位)</th><th>建议新补货合计</th><th>本地调拨合计</th></tr></thead><tbody>'+grpRows('cat')+'</tbody></table><div class="sh-note" style="margin-top:6px">⚠ 汇总仅供核对规模；实际下单按①表<b>逐色数量</b>执行——同小类各颜色销量/库存差异大，颜色间不可均摊。</div></div>';
+  h+='<details style="margin:12px 0"><summary style="cursor:pointer;font-weight:600;font-size:14px;color:#1d4ed8">▸ 生产排单汇总（小类/大类 · 点开核对规模；实际下单按上表逐色执行，颜色间不可均摊）</summary><div style="margin-top:8px"><h3 class="sh" style="font-size:14px">小类汇总（生产排单口径）</h3><div class="card"><table><thead><tr><th>小类</th><th>SKU数</th><th>近30天销量</th><th>系统建议下单合计</th><th>我算缺口合计(30天水位)</th><th>建议新补货合计</th><th>本地调拨合计</th></tr></thead><tbody>'+grpRows('sub')+'</tbody></table><div class="sh-note" style="margin-top:6px">⚠ 汇总仅供核对规模；实际下单按①表<b>逐色数量</b>执行——同小类各颜色销量/库存差异大，颜色间不可均摊。</div></div>';
+  h+='<h3 class="sh" style="font-size:14px">大类汇总</h3><div class="card"><table><thead><tr><th>大类</th><th>SKU数</th><th>近30天销量</th><th>系统建议下单合计</th><th>我算缺口合计(30天水位)</th><th>建议新补货合计</th><th>本地调拨合计</th></tr></thead><tbody>'+grpRows('cat')+'</tbody></table><div class="sh-note" style="margin-top:6px">⚠ 汇总仅供核对规模；实际下单按①表<b>逐色数量</b>执行——同小类各颜色销量/库存差异大，颜色间不可均摊。</div></div></div></details>';
 
   // ② 系统给单/限单诊断
-  h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></span>② 系统给单 / 限单诊断（合并《备货信息》）</h3>';
+  h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #0d9488">二、备货诊断 · 系统给单/限单，谁该下单谁被卡</h2>';
+h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></span>② 系统给单 / 限单诊断（合并《备货信息》）</h3>';
   h+='<div class="card"><table><thead><tr><th>品名</th><th>货号</th><th>大类</th><th>小类</th><th>系统下单数</th><th>建议下单量</th><th>希音仓库存</th><th>可售天数</th><th>上架天数</th><th>判定</th></tr></thead><tbody>';
   for(i=0;i<detail.length;i++){
     d=detail[i];
@@ -3102,14 +3104,16 @@ function render(detail,src){
     }
     return s;
   }
-  h+='<h3 class="sh" style="font-size:14px">②-A 按小类诊断汇总</h3><div class="card"><table><thead><tr><th>小类</th><th>SKU数</th><th>系统给单</th><th>系统限单</th><th>保证在售去化</th><th>停/不处理</th></tr></thead><tbody>'+diagRows('sub')+'</tbody></table></div>';
-  h+='<h3 class="sh" style="font-size:14px">②-B 按大类诊断汇总</h3><div class="card"><table><thead><tr><th>大类</th><th>SKU数</th><th>系统给单</th><th>系统限单</th><th>保证在售去化</th><th>停/不处理</th></tr></thead><tbody>'+diagRows('cat')+'</tbody></table></div>';
+  h+='<details style="margin:12px 0"><summary style="cursor:pointer;font-weight:600;font-size:14px;color:#1d4ed8">▸ 诊断汇总（小类/大类 · 点开核对）</summary><div style="margin-top:8px"><h3 class="sh" style="font-size:14px">小类诊断汇总</h3><div class="card"><table><thead><tr><th>小类</th><th>SKU数</th><th>系统给单</th><th>系统限单</th><th>保证在售去化</th><th>停/不处理</th></tr></thead><tbody>'+diagRows('sub')+'</tbody></table></div>';
+  h+='<h3 class="sh" style="font-size:14px">大类诊断汇总</h3><div class="card"><table><thead><tr><th>大类</th><th>SKU数</th><th>系统给单</th><th>系统限单</th><th>保证在售去化</th><th>停/不处理</th></tr></thead><tbody>'+diagRows('cat')+'</tbody></table></div></div></details>';
 
   // ②-C 曝光漏斗（截图数据录入）
+  h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #7c3aed">三、流量转化 · 曝光漏斗（录入截图数据 → 看转化卡在哪一环）</h2>';
   h+=renderFunnel(detail);
 
   // ③ 执行清单
-  h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--info)"></span>③ 执行清单（全托管真实动作）</h3>';
+  h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #b45309">四、执行清单 · 每款今天要做的真实动作</h2>';
+h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--info)"></span>③ 执行清单（全托管真实动作）</h3>';
   h+='<div class="card"><table><thead><tr><th></th><th>品名/货号</th><th>大类</th><th>小类</th><th>趋势</th><th>层次</th><th>支付率</th><th>30天销量</th><th>系统状态</th><th>商家动作</th><th>时限</th><th>对接方</th><th>优先级</th></tr></thead><tbody>';
   for(i=0;i<detail.length;i++){
     d=detail[i];
@@ -3124,7 +3128,8 @@ function render(detail,src){
   h+='</tbody></table></div>';
 
   // 专项卡片
-  h+='<h3 class="sh">④ 保证在售款去化专项（系统禁止下架）</h3><div class="card"><ul>'
+  h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #dc2626">五、动销优化专项 · 没单/限单/保证在售款怎么救（促销售动作）</h2>';
+h+='<h3 class="sh">④ 保证在售款去化专项（系统禁止下架）</h3><div class="card"><ul>'
    +'<li><b>对象</b>：gg16-墨绿/黄铜 牛头、gg15-红铜×2 竖琴、gg19 天鹅、gg13 船锚等被标"保证在售"、无销量也不让下架的款。</li>'
    +'<li><b>四招（按可控度）</b>：① 下调供货价 ② 供主图/短视频/卖点素材（不能直接发前台）③ 买手报活动/清仓专场 ④ 申请替换SKC（僵尸色换高动销色/新款）。</li>'
    +'<li><b>控备货</b>：申请下单数压 0，停止压货自然去化（系统仍给单则沟通买手停单）。</li>'
@@ -3385,6 +3390,19 @@ document.getElementById('sheinDemo').addEventListener('click',function(){
 });
 // 首次打开自动跑一遍内嵌真实数据，无需任何上传
 analyze(baseRows(),null,null,'内嵌22款（商品明细列表 2026-10-15）');
+// 本地库存实时同步：软件端服务提供 /api/local-stock（按《进销存统计表》mtime 缓存解析）；浏览器/GitHub 版无此接口，保持内嵌快照
+try{
+  fetch('/api/local-stock').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if(!j || !j.ok || !j.items) return;
+    var hit=0;
+    Object.keys(j.items).forEach(function(c){
+      if(LOCAL_EMBED[c]){ LOCAL_EMBED[c].loc=j.items[c].loc; LOCAL_EMBED[c].out30=j.items[c].out30; hit++; }
+    });
+    var el=document.getElementById('sfgLocalNote');
+    if(el) el.innerHTML='<b>③ 本地库存（实时同步 · 更新于 '+j.ts+'）</b>已自动读取《进销存统计表(5.15优化)》库存银行：映射 '+hit+' 个货号'+((j.unmapped&&j.unmapped.length)?('，未映射品名 '+j.unmapped.length+' 个（不影响已映射款；新购品名需登记映射后纳入）'):'')+'。每次打开页面自动同步，无需任何手动操作。';
+    if(hit>0){ analyze(baseRows(),null,null,'内嵌22款（商品明细列表 2026-10-15）·本地库存实时同步 '+j.ts); }
+  }).catch(function(){});
+}catch(e){}
 // Node 测试钩子（浏览器无 module，不生效）
 if (typeof module!=='undefined'&&module.exports) module.exports={baseRows:baseRows,computeRestock:computeRestock,mergeStock:mergeStock,loadDetailFromRows:loadDetailFromRows,aggregate:aggregate,BASE:BASE,STOCK_EMBED:STOCK_EMBED,LOCAL_EMBED:LOCAL_EMBED};
 })();
