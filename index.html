@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-16 17:39">
+<meta name="build-time" content="2026-10-16 17:56">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 17:39</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 17:56</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -2863,7 +2863,7 @@ function classify(d){
       var qty=sug?sug:sysO;
       return {label:'系统给单·可备货',action:'按系统建议下单量 '+Math.round(qty)+' 补货，防断供',pri:'高',dl:'按系统节奏',owner:'你'};
     }
-    return {label:'畅通可备货',action:'系统暂无建议单：商家可自主申请下单，可售跌破15天触发线再补，按30天水位缺口+本地调拨自算',pri:'中',dl:'常态',owner:'你'};
+    return {label:'畅通可备货',action:'系统暂无建议单：商家可自主申请下单，可售跌破18天触发线再补，按30天水位缺口+本地调拨自算',pri:'中',dl:'常态',owner:'你'};
   }
   // 新款/测款期：系统不给单 = 限单，先促动销
   if(tier==='新款'||(age!==null&&age!==undefined&&age<=21)){
@@ -2879,10 +2879,10 @@ function classify(d){
 }
 
 // ---------- 补货数量建议（系统建议量为锚 + 缺口交叉校验）----------
-// 口径（双阈值防积压）：可售<15天触发线（货期10天+发运入仓约5天）才补；补至30天水位；预测日均=近7天×60%+近30天×40%
-// 库存在 15~30 天水位间波动：跌破 15 天触发线才下单，到货（约13天）前不致断货，也不会一次性压 40 天的货
+// 口径（双阈值防积压）：可售<18天触发线（货期10天+发运入仓5天+安全边际3天）才补；补至30天水位；预测日均=近7天×60%+近30天×40%
+// 库存在 18~30 天水位间波动：跌破 18 天触发线才下单，货期+发运合计15日后到货，3天安全边际防工厂/船期波动断货
 function computeRestock(detail,local){
-  var TARGET=30, LEAD=10, TRIG=15;   // TARGET=补货目标水位(天)；LEAD=工厂货期(下定到出货)；TRIG=补货触发线(天)=货期10天+发运入仓约5天，要改改这里
+  var TARGET=30, LEAD=10, TRIG=18;   // TARGET=补货目标水位(天)；LEAD=工厂货期(下定到出货)；TRIG=补货触发线(天)=货期10天+发运入仓5天+安全边际3天，要改改这里
   for(var i=0;i<detail.length;i++){
     var d=detail[i];
     var sales=d.sales30||0;
@@ -2895,7 +2895,7 @@ function computeRestock(detail,local){
     var loc=locOf(local,d.code);
     var need=Math.max(0,TARGET*daily-shein-ship);  // 补至30天水位的缺口=30×预测日均−希音仓−在途（过触发线后才执行）
     var daysLeft=(daily>0?(shein+ship)/daily:999); // 希音仓侧（含在途）可售天数；本地库存不并入（本地调拨约5天到仓，比工厂货期快，只当弹药库）
-    var trig=(sales>0&&daysLeft<TRIG);             // 触发线：可售<15天才补，防积压
+    var trig=(sales>0&&daysLeft<TRIG);             // 触发线：可售<18天才补，防积压
     var sysO=d.sys, sug=d.suggest;
     var systemRec=0;
     if(sug!==null&&sug!==undefined&&sug>0) systemRec=sug;
@@ -2938,11 +2938,11 @@ function computeRestock(detail,local){
       d.restockNote='近30天无销量'+(systemRec>0?('但系统给单 '+Math.round(systemRec)+' 件：异常，先核查再决定'):'：暂不备货，先促动销');
       continue;
     }
-    // 2c) 触发线闸门：可售≥15天不动（防积压核心闸）
+    // 2c) 触发线闸门：可售≥18天不动（防积压核心闸）
     if(!trig){
       d.need=0;
-      d.restockNote='希音仓+在途可售约 '+Math.floor(daysLeft)+' 天 ≥ 15天触发线（货期10天+发运入仓约5天）：暂不补货，防积压'+(systemRec>0?('（系统建议下单 '+Math.round(systemRec)+' 件，暂缓）'):'');
-      if(daysLeft<=TRIG+5) d.restockNote+=' ℹ 接近触发线：约 '+Math.ceil(daysLeft-TRIG)+' 天后将跌破 15 天并自动给出下单建议，热门款可提前安排下单';
+      d.restockNote='希音仓+在途可售约 '+Math.floor(daysLeft)+' 天 ≥ 18天触发线（货期10天+发运入仓5天+安全边际3天）：暂不补货，防积压'+(systemRec>0?('（系统建议下单 '+Math.round(systemRec)+' 件，暂缓）'):'');
+      if(daysLeft<=TRIG+5) d.restockNote+=' ℹ 接近触发线：约 '+Math.ceil(daysLeft-TRIG)+' 天后将跌破 '+TRIG+' 天并自动给出下单建议，热门款可提前安排下单';
       continue;
     }
     // 3) 已触发+系统给单：以系统建议下单量为锚，与我算30天水位缺口交叉校验
@@ -2972,7 +2972,7 @@ function computeRestock(detail,local){
       continue;
     }
     d.restockQty=Math.round(need-loc); d.alloc=Math.round(loc);
-    d.restockNote='找工厂定制 '+Math.round(need-loc)+' 件 + 本地调拨 '+Math.round(loc)+' 件发希音仓（系统暂无建议单，按30天水位自算，已过15天触发线，请复核）'+urgent;
+    d.restockNote='找工厂定制 '+Math.round(need-loc)+' 件 + 本地调拨 '+Math.round(loc)+' 件发希音仓（系统暂无建议单，按30天水位自算，已过18天触发线，请复核）'+urgent;
   }
   return detail;
 }
@@ -3030,7 +3030,7 @@ function render(detail,src){
    +'</div>';
 
   h+='<div class="sh-note"><b>数据来源</b>：'+esc(src)
-   +'<br><b>补货口径（结合系统备货信息）</b>：「补货」= <b>找工厂定制的生产量</b>（不是发希音的总量；发希音的货 = 本地调拨 + 新定制）。有系统建议下单量 → <b>以系统建议为锚</b>，并与"触发线：希音仓+在途可售天数<15天（=货期10天+发运入仓约5天）才启动补货，防积压；补货量：补至30天水位，即需求缺口=30×预测日均−希音仓剩余−在途；预测日均=近7天×60%+近30天×40%，卖得慢自动少补"交叉校验，超/欠均标⚠；<b>本地进销存库存已计入</b>：缺口先由本地调拨覆盖，不足的差额才找工厂定制（本地够则新定制为0）。系统限单(下单=0) → 暂不补先促动销；保证在售/停售/低销尾品 → 禁止补；新品无系统单 → 勿盲补。所有表均按 <b>大类→小类</b> 精分。</div>';
+   +'<br><b>补货口径（结合系统备货信息）</b>：「补货」= <b>找工厂定制的生产量</b>（不是发希音的总量；发希音的货 = 本地调拨 + 新定制）。有系统建议下单量 → <b>以系统建议为锚</b>，并与"触发线：希音仓+在途可售天数<18天（=货期10天+发运入仓5天+安全边际3天）才启动补货，防积压；补货量：补至30天水位，即需求缺口=30×预测日均−希音仓剩余−在途；预测日均=近7天×60%+近30天×40%，卖得慢自动少补"交叉校验，超/欠均标⚠；<b>本地进销存库存已计入</b>：缺口先由本地调拨覆盖，不足的差额才找工厂定制（本地够则新定制为0）。系统限单(下单=0) → 暂不补先促动销；保证在售/停售/低销尾品 → 禁止补；新品无系统单 → 勿盲补。所有表均按 <b>大类→小类</b> 精分。</div>';
 
   // ① 补货数量报告
   h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary)"></span>① 需要补货的商品数量报告（结合系统备货信息）</h3>';
