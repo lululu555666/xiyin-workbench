@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-16 21:09">
+<meta name="build-time" content="2026-10-16 21:18">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 21:09</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 21:18</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -2306,11 +2306,19 @@ function render(detail,src){
    +'<br><b>补货口径（结合系统备货信息）</b>：「补货」= <b>找工厂定制的生产量</b>（不是发希音的总量；发希音的货 = 本地调拨 + 新定制）。有系统建议下单量 → <b>以系统建议为锚</b>，并与"触发线：希音仓+在途可售天数<18天（=货期10天+发运入仓5天+安全边际3天）才启动补货，防积压；补货量：补至30天水位，即需求缺口=30×预测日均−希音仓剩余−在途；预测日均=近7天×60%+近30天×40%，卖得慢自动少补"交叉校验，超/欠均标⚠；<b>本地进销存库存已计入</b>：缺口先由本地调拨覆盖，不足的差额才找工厂定制（本地够则新定制为0）。系统限单(下单=0) → 暂不补先促动销；保证在售/停售/低销尾品 → 禁止补；新品无系统单 → 勿盲补。所有表均按 <b>大类→小类</b> 精分。</div>';
 
   // ① 补货数量报告
-  h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #2563eb">一、补货下单 · 跌破18天触发线才补，触发后补至30天水位</h2>';
+  h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #2563eb">一、补货下单 · 跌破18天触发线才补，触发后补至30天水位 <button id="sheinS1Tgl" style="float:right;font-size:12px;padding:2px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;color:#475569">收起本节 ▲</button></h2><div id="sheinS1Body">';
   var _wd=detail.filter(function(x){ return x.daily>0 && x.shein!==undefined; })
     .map(function(x){ return {c:x, dl:(x.shein+(x.ship||0))/x.daily}; });
-  // 不折叠（用户拍板 2026-10-16 晚）：单装/多色款一律直接显示水位图，按款级可售升序
-  var _flat=_wd.sort(function(a,b){ return a.dl-b.dl; });
+  // 不折叠（用户拍板 2026-10-16 晚）：单装/多色款一律直接显示水位图
+  // 同商品归类排序（用户拍板 2026-10-16 晚）：同品各色卡片相邻，组内按可售升序；组间按该商品最急的款级可售升序
+  var _pk=function(s){ s=String(s||''); var i=s.indexOf('\u00b7'); return i>0?s.slice(0,i):s; };
+  var _gmin={};
+  _wd.forEach(function(w){ var k=_pk(w.c.short); if(_gmin[k]===undefined||w.dl<_gmin[k]) _gmin[k]=w.dl; });
+  var _flat=_wd.sort(function(a,b){
+    var ka=_pk(a.c.short), kb=_pk(b.c.short);
+    if(ka!==kb) return (_gmin[ka]-_gmin[kb]) || (ka<kb?-1:1);
+    return a.dl-b.dl;
+  });
   var _charts=[];
   h+='<div class="card" id="sheinWaterWrap" style="margin-bottom:12px"><div style="font-weight:600;font-size:14px;margin-bottom:6px">库存水位图 · 全部直接显示，不折叠（红<18 触发下单 ｜ 黄 18–30 关注 ｜ 绿 ≥30 健康；虚线=18天触发线/30天水位；标"组合装/多件装"的行，生产需求已归集到对应单装色行）</div>';
   _flat.forEach(function(w,gi){
@@ -2324,7 +2332,7 @@ function render(detail,src){
         items.push({lab:'└ '+x.a+tag+(cdl===null?'（无销量）':''), dl:cdl, c:null, combo:ci.combo?ci.comps:(ci.multi>1?ci.multi:null)});
       });
       var cid='sheinWaterCv_'+gi;
-      var hgt=items.length*20+44;
+      var hgt=items.length*20+60;   // 顶部+16px 留白放触发线/水位线标注，避免压柱条
       h+='<div style="margin:8px 0;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px">'
         +'<div style="font-weight:600;font-size:13px;margin-bottom:2px">'+esc(w.c.short)+'<span style="color:#9ca3af;font-weight:400;font-size:12px"> · '+esc(w.c.cat)+'/'+esc(w.c.sub)+'</span>（款级可售 '+w.dl.toFixed(1)+' 天'+(w.dl<18?' <b style="color:#dc2626">需补</b>':'')+'）</div>'
         +'<div style="position:relative;height:'+hgt+'px;margin:2px 0 6px 0"><canvas id="'+cid+'"></canvas></div>'
@@ -2373,11 +2381,20 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       x.sysA=x.daily>0?(_sys0?_sys0*sh_:null):null;
       x.rqA=(x.daily>0&&_rq0!==null)?_rq0*sh_:null;
       x.allocA=x.daily>0?_alloc0*sh_:null;
-      x.gapA=(x.daily>0&&x.sh!==null&&x.sh!==undefined)?Math.max(0,30*x.daily-x.sh-(x.shipA||0)):null;
+      x.cn=_normColor(x.a);
+      var _ex=roll[x.cn];
+      x.extra=(!x.ci.combo && !(x.ci.multi>1) && _ex)?_ex.extra:0;   // 组合装/多件装生产消耗按需求划入单装色行（用户拍板 2026-10-16 晚）
+      x.gapA=(x.daily>0&&x.sh!==null&&x.sh!==undefined)?Math.max(0,30*(x.daily+x.extra)-x.sh-(x.shipA||0)):null;
       x.realLoc=_realLoc(d.locNames, x.a);   // 该色实测本地库存（品名含色名匹配），null=无法匹配
+      // 调拨按色级实测封顶（用户拍板 2026-10-16 晚）：本地不够调拨的部分自动转入「需工厂定制」
+      if(x.realLoc!==null && x.gapA!==null){
+        x.allocA=Math.min(x.gapA,x.realLoc);
+        x.rqA=x.daily>0?Math.max(0,x.gapA-x.allocA):null;
+        x.locCapped=true;
+      }
     });
-    var _fa=function(v,dec){ return (v===null||v===undefined)?'—':(v.toFixed(dec===undefined?1:dec)); };
-    var r='<tr><td colspan="13" style="background:#ede9fe;padding:4px 12px 4px 28px;font-size:12px;font-weight:600;color:#5b21b6">▸ 颜色细分（'+d.skuList.length+' 色 · 按色级可售升序；色级可售=仅SHEIN仓口径；在途/建议/定制/调拨=按日均占比分摊到色，缺口=30×色级日均−色级SHEIN仓−分摊在途，合计≈款级；本地标 * 为该色实测库存（进销存库存银行按品名匹配），≈为按日均占比分摊）</td></tr>';
+    var _fa=function(v,dec){ return (v===null||v===undefined)?'—':(v.toFixed(dec===undefined?0:dec)); };   // 件数一律取整（用户拍板：库存/调拨等件数不出现小数点）
+    var r='<tr><td colspan="13" style="background:#ede9fe;padding:4px 12px 4px 28px;font-size:12px;font-weight:600;color:#5b21b6">▸ 颜色细分（'+d.skuList.length+' 色 · 按色级可售升序；色级可售=仅SHEIN仓口径；在途/建议=按日均占比分摊；缺口=30×（色级日均+划入的组合装/多件装消耗）−色级SHEIN仓−分摊在途，组合装行不重复下单（缺口/定制/调拨显示—）；<b>本地调拨=把本地现货直发希音仓（免重新生产），按该色实测库存封顶</b>，实测不够的差额自动转入「需工厂定制」；无法按色匹配实测的列显示 ≈分摊估计值（件数四舍五入取整）</td></tr>';
     for(var k=0;k<ls.length;k++){
       var x=ls[k];
       var cn=_normColor(x.a), ci=x.ci;
@@ -2388,13 +2405,14 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       else note='<span style="color:#059669">该色可售约 '+x.dl.toFixed(1)+' 天 · 健康</span>';
       if(ci.combo) note='<span style="color:#6d28d9">组合装（'+esc(ci.comps.join(' + '))+' 各1）：SHEIN仓独立备货可正常卖；生产需求已归集到对应单装色行。 </span>'+note;
       else if(ci.multi>1) note='<span style="color:#6d28d9">'+ci.multi+'件装：每卖1件消耗该色×'+ci.multi+'。 </span>'+note;
-      else { var _ex=roll[cn]; if(_ex) note+='<span style="color:#6d28d9"> 生产归集：另需覆盖组合装/多件装消耗，折算日均 +'+_ex.extra.toFixed(2)+' 件（'+esc(_ex.from.join('、'))+'）</span>'; }
+      else { var _ex2=roll[cn]; if(_ex2&&x.extra>0) note+='<span style="color:#6d28d9"> 已按需求划入：组合装/多件装消耗折算日均 +'+_ex2.extra.toFixed(2)+' 件已计入本行缺口（'+esc(_ex2.from.join('、'))+'）</span>'; }
       if(x.realLoc!==null && x.realLoc<=10 && !ci.combo) note+='<b style="color:#dc2626"> ⚠ 该色本地实测仅剩 '+x.realLoc+' 件——本地调拨到该色时数量以实测为准，不足部分需向工厂定制该色</b>';
+      if(x.locCapped && x.gapA>x.realLoc) note+='<b style="color:#dc2626"> ⚠ 该色缺口 '+Math.round(x.gapA)+' 件 > 本地实测 '+x.realLoc+' 件：调拨按实测封顶 '+x.realLoc+' 件，另需工厂定制该色 '+Math.round(x.gapA-x.realLoc)+' 件</b>';
       r+='<tr style="background:#faf5ff">'
        +'<td style="padding-left:28px"><span style="color:#6d28d9">└ '+esc(x.a)+(ci.combo?'（组合装）':(ci.multi>1?'（'+ci.multi+'件装）':''))+'</span></td>'
        +'<td>〃</td><td>〃</td>'
        +'<td>'+Math.round(x.s30)+'</td><td>'+x.daily.toFixed(2)+'</td><td>'+x.sh+'</td>'
-       +'<td>'+_fa(x.shipA)+'</td><td>'+(x.realLoc!==null?('<b'+(x.realLoc<=10?' style="color:#dc2626"':'')+'>'+x.realLoc+'*</b>'):('≈'+_fa(x.locA)))+'</td><td>'+_fa(x.sysA,0)+'</td><td>'+_fa(x.gapA,0)+'</td><td style="color:#047857">'+_fa(x.rqA,0)+'</td><td>'+_fa(x.allocA,0)+'</td>'
+       +'<td>'+_fa(x.shipA)+'</td><td>'+(x.realLoc!==null?('<b'+(x.realLoc<=10?' style="color:#dc2626"':'')+'>'+x.realLoc+'*</b>'):('≈'+_fa(x.locA)))+'</td><td>'+_fa(x.sysA,0)+'</td><td>'+(x.ci.combo?'—':_fa(x.gapA,0))+'</td><td style="color:#047857">'+(x.ci.combo?'—':(x.locCapped?_fa(x.rqA,0):(_fa(x.rqA,0)==='—'?'—':'≈'+_fa(x.rqA,0))))+'</td><td>'+(x.ci.combo?'—':(x.locCapped?_fa(x.allocA,0):(_fa(x.allocA,0)==='—'?'—':'≈'+_fa(x.allocA,0))))+'</td>'
        +'<td class="act">'+note+'</td></tr>';
     }
     return r;
@@ -2419,6 +2437,7 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
   h+='</tbody></table>';
   h+='<div class="sh-note" style="margin-top:8px">绿色=需工厂定制并已算量；红色=0（暂不补/系统限单/保证在售/停售/无需补/本地可全覆盖）；灰色"缺数据"=该款不在备货信息导出中。<b>「需工厂定制」+「本地调拨」= 本次要发希音仓的总量</b>；数量唯一以本表为准，②表只解释"为什么"。</div></div>';
 
+  h+='</div>';   // 「一、补货下单」整节包裹结束（总开关折叠用）
   function grpRows(key){
     var rows=aggregate(detail,key), s='';
     for(var j=0;j<rows.length;j++){
@@ -2431,6 +2450,10 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
   }
   h+='<details style="margin:12px 0"><summary style="cursor:pointer;font-weight:600;font-size:14px;color:#1d4ed8">▸ 生产排单汇总（小类/大类 · 点开核对规模；实际下单按上表逐色执行，颜色间不可均摊）</summary><div style="margin-top:8px"><h3 class="sh" style="font-size:14px">小类汇总（生产排单口径）</h3><div class="card"><table><thead><tr><th>小类</th><th>SKU数</th><th>近30天销量</th><th>系统建议下单合计</th><th>我算缺口合计(30天水位)</th><th>建议新补货合计</th><th>本地调拨合计</th></tr></thead><tbody>'+grpRows('sub')+'</tbody></table><div class="sh-note" style="margin-top:6px">⚠ 汇总仅供核对规模；实际下单按①表<b>逐色数量</b>执行——同小类各颜色销量/库存差异大，颜色间不可均摊。</div></div>';
   h+='<h3 class="sh" style="font-size:14px">大类汇总</h3><div class="card"><table><thead><tr><th>大类</th><th>SKU数</th><th>近30天销量</th><th>系统建议下单合计</th><th>我算缺口合计(30天水位)</th><th>建议新补货合计</th><th>本地调拨合计</th></tr></thead><tbody>'+grpRows('cat')+'</tbody></table><div class="sh-note" style="margin-top:6px">⚠ 汇总仅供核对规模；实际下单按①表<b>逐色数量</b>执行——同小类各颜色销量/库存差异大，颜色间不可均摊。</div></div></div></details>';
+
+  // 处理优先级排序辅助（用户拍板 2026-10-16 晚：相同板块一律按处理优先级从高到低）
+  var _priOrd={'高':0,'中':1,'低':2};
+  var _labOrd={'系统给单·可备货':0,'畅通可备货':1,'新品窗口·抢转备货':2,'系统限单(测款/滞销)':3,'保证在售去化':4,'该清仓':5,'观察':6,'停/不处理':7};
 
   // ② 系统给单/限单诊断
   h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #0d9488">二、备货诊断 · 系统给单/限单，谁该下单谁被卡</h2>';
@@ -2459,8 +2482,13 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
   }
   h+='<div class="card" style="margin-bottom:10px"><div style="font-weight:600;font-size:14px;margin-bottom:6px">判定结论 · 每类款怎么办（结论式）</div>'+diagConcl()+'</div>';
   h+='<details style="margin:12px 0"><summary style="cursor:pointer;font-weight:600;font-size:14px;color:#1d4ed8">▸ 判定明细表（22 款 · 点开查看）</summary><div class="card"><table><thead><tr><th>品名</th><th>货号</th><th>大类</th><th>小类</th><th>系统下单数</th><th>建议下单量</th><th>希音仓库存</th><th>可售天数</th><th>上架天数</th><th>判定</th></tr></thead><tbody>';
-  for(i=0;i<detail.length;i++){
-    d=detail[i];
+  var _dgo=detail.slice().sort(function(a,b){
+    var la=_labOrd[a.label]!==undefined?_labOrd[a.label]:9, lb=_labOrd[b.label]!==undefined?_labOrd[b.label]:9;
+    if(la!==lb) return la-lb;
+    return a.code<b.code?-1:1;
+  });   // 处理优先级从高到低（用户拍板 2026-10-16 晚）：同判定相邻，组内按货号
+  for(i=0;i<_dgo.length;i++){
+    d=_dgo[i];
     var c2=labColor(d.label);
     var sysDisp=(d.haveSys&&d.sys===0)?'<span class="bad">0（限单）</span>':((d.sys===null||d.sys===undefined)?'<span class="na">-</span>':d.sys);
     var sugDisp=(d.suggest===null||d.suggest===undefined)?'<span class="na">-</span>':d.suggest;
@@ -2495,8 +2523,15 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
   h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #b45309">四、执行清单 · 每款今天要做的真实动作</h2>';
 h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--info)"></span>③ 执行清单（全托管真实动作）</h3>';
   h+='<div class="card"><table><thead><tr><th></th><th>品名/货号</th><th>大类</th><th>小类</th><th>趋势</th><th>层次</th><th>支付率</th><th>30天销量</th><th>系统状态</th><th>商家动作</th><th>时限</th><th>对接方</th><th>优先级</th></tr></thead><tbody>';
-  for(i=0;i<detail.length;i++){
-    d=detail[i];
+  var _edo=detail.slice().sort(function(a,b){
+    var pa=_priOrd[a.pri]!==undefined?_priOrd[a.pri]:9, pb=_priOrd[b.pri]!==undefined?_priOrd[b.pri]:9;
+    if(pa!==pb) return pa-pb;
+    var la=_labOrd[a.label]!==undefined?_labOrd[a.label]:9, lb=_labOrd[b.label]!==undefined?_labOrd[b.label]:9;
+    if(la!==lb) return la-lb;
+    return a.code<b.code?-1:1;
+  });   // 处理优先级 高→中→低（用户拍板 2026-10-16 晚），同优先级按判定紧急度+货号
+  for(i=0;i<_edo.length;i++){
+    d=_edo[i];
     var c3=labColor(d.label);
     h+='<tr><td style="width:24px;text-align:center;color:#9ca3af">□</td>'
      +'<td><b>'+esc(d.short)+'</b><br><span class="mut">'+esc(d.code)+'</span></td>'
@@ -2538,6 +2573,13 @@ h+='<h3 class="sh">④ 保证在售款去化专项（系统禁止下架）</h3><
     if(bar) document.documentElement.style.setProperty('--th-top', Math.ceil(bar.getBoundingClientRect().height)+'px');
   };
   _syncThTop();
+  // 「一、补货下单」整节折叠总开关（用户拍板 2026-10-16 晚）
+  var _s1t=document.getElementById('sheinS1Tgl'), _s1b=document.getElementById('sheinS1Body');
+  if(_s1t&&_s1b) _s1t.addEventListener('click',function(){
+    var hide=_s1b.style.display!=='none';
+    _s1b.style.display=hide?'none':'';
+    _s1t.textContent=hide?'展开本节 ▼':'收起本节 ▲';
+  });
   window.addEventListener('resize', _syncThTop);
   window.addEventListener('scroll', _syncThTop, {passive:true});   // 滚动时实时校准（用户环境顶栏高度会动态变化）
   var _barEl=document.querySelector('.topbar');
@@ -2553,7 +2595,7 @@ h+='<h3 class="sh">④ 保证在售款去化专项（系统禁止下架）</h3><
           ctx.save(); ctx.strokeStyle=rf[2]; ctx.setLineDash([5,4]); ctx.lineWidth=1.5;
           ctx.beginPath(); ctx.moveTo(px, chart.chartArea.top); ctx.lineTo(px, chart.chartArea.bottom); ctx.stroke();
           ctx.setLineDash([]); ctx.fillStyle=rf[2]; ctx.font='11px sans-serif';
-          ctx.fillText(rf[1], px+3, chart.chartArea.top+11); ctx.restore(); }); } };
+          ctx.fillText(rf[1], px+3, chart.chartArea.top-5); ctx.restore(); }); } };   // 标注画在绘图区上方，避免与柱条重叠
     var _mkc=function(ch){
       var cv=document.getElementById(ch.id);
       if(!cv || cv._done) return;
@@ -2561,7 +2603,7 @@ h+='<h3 class="sh">④ 保证在售款去化专项（系统禁止下架）</h3><
       new Chart(cv, { type:'bar',
         data:{ labels:ch.labels,
           datasets:[{ data:ch.data, backgroundColor:ch.bgs, borderRadius:3, barThickness:14 }]},
-        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, layout:{padding:{top:16}},
           plugins:{ legend:{display:false},
             tooltip:{ callbacks:{ label:function(ctx){ return ch.tips[ctx.dataIndex]||''; } } } },
           scales:{ x:{ min:0, max:45, title:{display:true,text:'可售天数（超45天封顶显示）'},
