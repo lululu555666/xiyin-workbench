@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-16 16:37">
+<meta name="build-time" content="2026-10-16 16:44">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 16:37</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 16:44</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -2942,6 +2942,7 @@ function computeRestock(detail,local){
     if(!trig){
       d.need=0;
       d.restockNote='希音仓+在途可售约 '+Math.floor(daysLeft)+' 天 ≥ 15天触发线（货期10天+发运入仓约5天）：暂不补货，防积压'+(systemRec>0?('（系统建议下单 '+Math.round(systemRec)+' 件，暂缓）'):'');
+      if(daysLeft<=TRIG+5) d.restockNote+=' ℹ 接近触发线：约 '+Math.ceil(daysLeft-TRIG)+' 天后将跌破 15 天并自动给出下单建议，热门款可提前安排下单';
       continue;
     }
     // 3) 已触发+系统给单：以系统建议下单量为锚，与我算30天水位缺口交叉校验
