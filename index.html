@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-16 19:09">
+<meta name="build-time" content="2026-10-16 19:21">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 19:09</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 19:21</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -566,6 +566,9 @@ tbody tr.total-row:hover{background:#ede9fe}
 #shein td input[type=number]{border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:13px}
 #shein ul{margin:6px 0;padding-left:18px;font-size:13px;color:var(--text2);line-height:1.7}
 #shein .exp-btn{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;margin:2px 6px 2px 0}
+/* 表头吸顶：顶栏52px，滚动浏览时表头跟随，滚出表格自动隐藏（全站表头通用） */
+thead th{top:52px !important;z-index:50 !important;box-shadow:0 1px 3px rgba(15,23,42,.08)}
+#sheinOut thead th{background:#f1f5f9}
 </style>
 
 <div class="layer" id="shein">
@@ -2355,18 +2358,22 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       var dl=(daily>0&&(x.sh!==null&&x.sh!==undefined))?(x.sh/daily):null;
       return {a:x.a, s7:x.s7, s30:x.s30, sh:x.sh, daily:daily, dl:dl};
     }).sort(function(p,q){ return (p.dl===null?999:p.dl)-(q.dl===null?999:q.dl); });
-    var r='<tr><td colspan="13" style="background:#f8fafc;padding:6px 12px 6px 28px">'
-      +'<div style="font-size:12px;font-weight:600;color:#6d28d9;margin-bottom:4px">▸ 颜色细分（'+d.skuList.length+' 色 · 可售天数=仅SHEIN仓口径；在途/本地库存为款级，调拨时按此细分优先补红标色）</div>'
-      +'<table style="font-size:12px;width:100%;border-collapse:collapse"><thead><tr>'
-      +'<th style="text-align:left;padding:2px 10px;color:#475569">颜色/规格</th><th style="text-align:left;padding:2px 10px;color:#475569">近7天</th><th style="text-align:left;padding:2px 10px;color:#475569">近30天</th><th style="text-align:left;padding:2px 10px;color:#475569">日均(预测)</th><th style="text-align:left;padding:2px 10px;color:#475569">SHEIN仓</th><th style="text-align:left;padding:2px 10px;color:#475569">色级可售</th>'
-      +'</tr></thead><tbody>';
+    var r='<tr><td colspan="13" style="background:#ede9fe;padding:4px 12px 4px 28px;font-size:12px;font-weight:600;color:#5b21b6">▸ 颜色细分（'+d.skuList.length+' 色 · 按色级可售升序；色级可售=仅SHEIN仓口径，在途/本地库存为款级统一调配）</td></tr>';
     for(var k=0;k<ls.length;k++){
       var x=ls[k];
-      var dlDisp=(x.dl===null)?'<span style="color:#9ca3af">无销量</span>'
-        :(x.dl.toFixed(1)+'天'+(x.dl<18?' <b style="color:#dc2626">⚠ 优先补</b>':(x.dl<30?' <span style="color:#d97706">关注</span>':'')));
-      r+='<tr><td style="padding:2px 10px">'+esc(x.a)+'</td><td style="padding:2px 10px">'+x.s7+'</td><td style="padding:2px 10px">'+Math.round(x.s30)+'</td><td style="padding:2px 10px">'+x.daily.toFixed(2)+'</td><td style="padding:2px 10px">'+x.sh+'</td><td style="padding:2px 10px">'+dlDisp+'</td></tr>';
+      var note;
+      if(x.dl===null) note='<span style="color:#9ca3af">该色无销量：不占补货额度，随款级调拨搭售即可</span>';
+      else if(x.dl<18) note='<b style="color:#dc2626">⚠ 该色可售仅 '+x.dl.toFixed(1)+' 天（SHEIN仓口径）——将断货，款级下单/本地调拨时优先补该色</b>';
+      else if(x.dl<30) note='<span style="color:#d97706">该色可售约 '+x.dl.toFixed(1)+' 天 · 关注</span>';
+      else note='<span style="color:#059669">该色可售约 '+x.dl.toFixed(1)+' 天 · 健康</span>';
+      r+='<tr style="background:#faf5ff">'
+       +'<td style="padding-left:28px"><span style="color:#6d28d9">└ '+esc(x.a)+'</span></td>'
+       +'<td>〃</td><td>〃</td>'
+       +'<td>'+Math.round(x.s30)+'</td><td>'+x.daily.toFixed(2)+'</td><td>'+x.sh+'</td>'
+       +'<td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>'
+       +'<td class="act">'+note+'</td></tr>';
     }
-    return r+'</tbody></table></td></tr>';
+    return r;
   }
     var rq=d.restockQty, rqDisp, c;
     if(rq===null||rq===undefined){ rqDisp='<span class="na">缺数据</span>'; c='#9ca3af'; }
@@ -2404,7 +2411,30 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
   // ② 系统给单/限单诊断
   h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #0d9488">二、备货诊断 · 系统给单/限单，谁该下单谁被卡</h2>';
 h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></span>② 系统给单 / 限单诊断（合并《备货信息》）</h3>';
-  h+='<div class="card"><table><thead><tr><th>品名</th><th>货号</th><th>大类</th><th>小类</th><th>系统下单数</th><th>建议下单量</th><th>希音仓库存</th><th>可售天数</th><th>上架天数</th><th>判定</th></tr></thead><tbody>';
+  function diagConcl(){
+    var msgs={
+      '系统给单·可备货':'按系统建议单执行即可',
+      '畅通可备货':'可自主申请下单；跌破18天触发线自动出量',
+      '系统限单(测款/滞销)':'系统卡单：供素材+促动销，达标促放单',
+      '新品窗口·抢转备货':'14–21天窗口内拉点击/加购/支付达标转备货',
+      '保证在售去化':'禁下架：调价+素材+报活动+替换SKC 四招去化',
+      '该清仓':'120天内主动清仓，避免强制30%清仓',
+      '停/不处理':'不再备货，自然清仓',
+      '观察':'维持，跟踪动销'
+    };
+    var order=['系统给单·可备货','畅通可备货','系统限单(测款/滞销)','新品窗口·抢转备货','保证在售去化','该清仓','停/不处理','观察'];
+    var g={};
+    for(var i=0;i<detail.length;i++){ var L=detail[i].label||'其他'; (g[L]=g[L]||[]).push(detail[i].short); }
+    var out='';
+    order.forEach(function(L){
+      if(!g[L]) return;
+      out+='<div style="margin:5px 0;font-size:13px"><b style="color:#1d4ed8">'+esc(L)+'</b>（'+g[L].length+' 款）：'+esc(msgs[L]||'')+'<span class="mut"> ｜ '+esc(g[L].join('、'))+'</span></div>';
+    });
+    Object.keys(g).forEach(function(L){ if(order.indexOf(L)<0) out+='<div style="margin:5px 0;font-size:13px"><b>'+esc(L)+'</b>（'+g[L].length+' 款）<span class="mut"> ｜ '+esc(g[L].join('、'))+'</span></div>'; });
+    return out;
+  }
+  h+='<div class="card" style="margin-bottom:10px"><div style="font-weight:600;font-size:14px;margin-bottom:6px">判定结论 · 每类款怎么办（结论式）</div>'+diagConcl()+'</div>';
+  h+='<details style="margin:12px 0"><summary style="cursor:pointer;font-weight:600;font-size:14px;color:#1d4ed8">▸ 判定明细表（22 款 · 点开查看）</summary><div class="card"><table><thead><tr><th>品名</th><th>货号</th><th>大类</th><th>小类</th><th>系统下单数</th><th>建议下单量</th><th>希音仓库存</th><th>可售天数</th><th>上架天数</th><th>判定</th></tr></thead><tbody>';
   for(i=0;i<detail.length;i++){
     d=detail[i];
     var c2=labColor(d.label);
@@ -2418,7 +2448,7 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
      +'<td style="color:'+c2+';font-weight:600">'+esc(d.label)+'</td></tr>';
   }
   h+='</tbody></table>';
-  h+='<div class="sh-note" style="margin-top:8px">已合并《备货信息》（系统下单数/建议下单数/SHEIN仓库存/可售天数/上架天数/商品层次）。"0（限单）"=系统主动不给下单；备货款系统0单时商家仍可自主申请下单。</div></div>';
+  h+='<div class="sh-note" style="margin-top:8px">已合并《备货信息》（系统下单数/建议下单数/SHEIN仓库存/可售天数/上架天数/商品层次）。"0（限单）"=系统主动不给下单；备货款系统0单时商家仍可自主申请下单。</div></div></details>';
 
   function diagRows(key){
     var rows=aggregate(detail,key), s='';
@@ -2540,7 +2570,7 @@ function funnelSave(o){
 function renderFunnel(detail){
   var saved=funnelLoad();
   var h='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--warn,#b45309)"></span>②-C 曝光漏斗分析（导入流量截图 + 录入数字）</h3>';
-  h+='<div class="card"><div class="sh-note">希音后台<b>流量数据不支持导出</b>。在上方「商品分析」上传流量截图仅作本机存档（浏览器不能读取图中文字），请把图中数字录入下表：<b>曝光 / 访客 / 加购 / 支付订单</b>。数据只存本机 localStorage，不外传。支付订单数已按《商品明细列表》预填，可按截图改。</div>';
+  h+='<div class="card"><details><summary style="cursor:pointer;font-weight:600;font-size:14px;color:#1d4ed8">▸ 逐款流量录入（可选 · 默认收起）</summary><div class="sh-note">希音后台<b>流量数据不支持导出</b>。在上方「商品分析」上传流量截图仅作本机存档（浏览器不能读取图中文字），请把图中数字录入下表：<b>曝光 / 访客 / 加购 / 支付订单</b>。数据只存本机 localStorage，不外传。支付订单数已按《商品明细列表》预填，可按截图改。</div>';
   h+='<table><thead><tr><th>品名/货号</th><th>曝光</th><th>访客</th><th>加购</th><th>支付订单</th></tr></thead><tbody>';
   for(var i=0;i<detail.length;i++){
     var d=detail[i], s=saved[d.code]||{};
@@ -2552,7 +2582,7 @@ function renderFunnel(detail){
   }
   h+='</tbody></table>';
   h+='<div style="margin-top:10px"><button class="exp-btn" id="sheinFunnelRun">生成漏斗分析</button> <span class="sf-status" id="sheinFunnelMsg"></span></div>';
-  h+='<div id="sheinFunnelOut"></div></div>';
+  h+='</details><div id="sheinFunnelOut"></div></div>';
   return h;
 }
 function bindFunnel(detail){
