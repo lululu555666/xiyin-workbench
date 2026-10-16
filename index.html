@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-16 19:39">
+<meta name="build-time" content="2026-10-16 19:42">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 19:39</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-16 19:42</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -542,7 +542,7 @@ tbody tr.total-row:hover{background:#ede9fe}
 </div>
 
 <style>
-#shein .card{overflow-x:auto}
+#shein .card{overflow:visible}
 #shein .sf-grid{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
 #shein .sf-item{flex:1;min-width:230px;background:#f8fafc;border:1px dashed var(--border);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2)}
 #shein .sf-item b{display:block;font-size:13px;color:var(--text);margin-bottom:2px}
@@ -567,7 +567,8 @@ tbody tr.total-row:hover{background:#ede9fe}
 #shein ul{margin:6px 0;padding-left:18px;font-size:13px;color:var(--text2);line-height:1.7}
 #shein .exp-btn{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;margin:2px 6px 2px 0}
 /* 表头吸顶：顶栏52px，滚动浏览时表头跟随，滚出表格自动隐藏（全站表头通用） */
-thead th{top:0 !important;z-index:50 !important;box-shadow:0 2px 4px rgba(15,23,42,.10)}
+thead th{top:52px !important;z-index:50 !important;box-shadow:0 2px 4px rgba(15,23,42,.10)}
+.main{overflow:visible !important}
 #sheinOut thead th{background:#f1f5f9}
 </style>
 
@@ -2351,14 +2352,38 @@ function render(detail,src){
     var mb=Math.min.apply(null,_gmap[b].map(function(w){return w.dl;}));
     return ma-mb;
   });
-  h+='<div class="card" style="margin-bottom:12px"><div style="font-weight:600;font-size:14px;margin-bottom:6px">库存水位图 · 按小类分组（点开小类查看；红<18 触发下单 ｜ 黄 18–30 关注 ｜ 绿 ≥30 健康；虚线=18天触发线/30天水位）</div>';
+  var _charts=[];
+  h+='<div class="card" style="margin-bottom:12px"><div style="font-weight:600;font-size:14px;margin-bottom:6px">库存水位图 · 小类→商品→颜色 逐级展开（红<18 触发下单 ｜ 黄 18–30 关注 ｜ 绿 ≥30 健康；虚线=18天触发线/30天水位）</div>';
   _gorder.forEach(function(k,gi){
     var rows=_gmap[k].sort(function(a,b){ return a.dl-b.dl; });
     var mn=rows[0].dl, need=rows.filter(function(w){return w.dl<18;}).length;
-    h+='<details data-water="1"'+(gi===0?' open':'')+' style="margin:6px 0;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px">'
-      +'<summary style="cursor:pointer;font-weight:600;font-size:13px">'+esc(rows[0].c.cat)+' · '+esc(rows[0].c.sub)+'（'+rows.length+' 款 · 最低可售 '+mn.toFixed(1)+' 天'+(need>0?(' · <b style="color:#dc2626">'+need+' 款需补</b>'):'')+'）</summary>'
-      +'<div style="position:relative;height:'+(rows.length*24+56)+'px;margin-top:6px"><canvas id="sheinWaterCv_'+gi+'"></canvas></div>'
-      +'</details>';
+    h+='<details data-water="1" style="margin:6px 0;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px">'
+      +'<summary style="cursor:pointer;font-weight:600;font-size:13px">'+esc(rows[0].c.cat)+' · '+esc(rows[0].c.sub)+'（'+rows.length+' 款 · 最低可售 '+mn.toFixed(1)+' 天'+(need>0?(' · <b style="color:#dc2626">'+need+' 款需补</b>'):'')+'）</summary>';
+    rows.forEach(function(w,ki){
+      var items=[{lab:'■ 款级（希音仓+在途）', dl:w.dl, c:w.c}];
+      (w.c.skuList||[]).forEach(function(x){
+        var d7=(x.s7/7)||0, d30=(x.s30/30)||0;
+        var cd=(x.s30>0)?(d7*0.6+d30*0.4):0;
+        var cdl=(cd>0&&(x.sh!==null&&x.sh!==undefined))?(x.sh/cd):null;
+        items.push({lab:'└ '+x.a+(cdl===null?'（无销量）':''), dl:cdl, c:null});
+      });
+      var cid='sheinWaterCv_'+gi+'_'+ki;
+      var hgt=items.length*20+44;
+      h+='<details data-water="1" style="margin:4px 0 4px 14px;border-left:3px solid #c7d2fe;padding:2px 0 2px 8px">'
+        +'<summary style="cursor:pointer;font-weight:600;font-size:12px">'+esc(w.c.short)+'（款级可售 '+w.dl.toFixed(1)+' 天'+(w.dl<18?' <b style="color:#dc2626">需补</b>':'')+'）</summary>'
+        +'<div style="position:relative;height:'+hgt+'px;margin:4px 0 8px 0"><canvas id="'+cid+'"></canvas></div>'
+        +'</details>';
+      var labels=[],data=[],bgs=[],tips=[];
+      items.forEach(function(it){
+        labels.push(it.lab);
+        data.push(it.dl===null?0:Math.min(it.dl,45));
+        bgs.push(it.dl===null?'#cbd5e1':(it.dl<18?'#dc2626':(it.dl<30?'#d97706':'#059669')));
+        if(it.c) tips.push(it.c.code+' ｜ 款级可售约 '+it.dl.toFixed(1)+' 天 ｜ 希音仓'+it.c.shein+' 在途'+(it.c.ship||0)+' 本地'+it.c.loc+(it.c.restockQty>0?(' ｜ 建议：定制 '+it.c.restockQty+' + 调拨 '+it.c.alloc):' ｜ 暂不补'));
+        else tips.push('色级可售=仅SHEIN仓口径（在途/本地库存为款级统一调配）');
+      });
+      _charts.push({id:cid, labels:labels, data:data, bgs:bgs, tips:tips});
+    });
+    h+='</details>';
   });
   h+='</div>';
 h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:var(--primary)"></span>① 需要补货的商品数量报告（结合系统备货信息）</h3>';
@@ -2528,10 +2553,9 @@ h+='<h3 class="sh">④ 保证在售款去化专项（系统禁止下架）</h3><
    +'<button class="exp-btn" id="sheinExpFunnel">导出曝光漏斗 CSV</button></div>';
 
   document.getElementById('sheinOut').innerHTML=h;
-  // 库存水位图：各小类懒初始化（details 打开才建图，隐藏时建图会得到 0 尺寸）
+  // 库存水位图：逐款图表初始化（嵌套 details，任一层折叠即懒初始化）
   try{
-  if(typeof Chart!=='undefined' && _wd.length){
-    var _col=function(dl){ return dl<18?'#dc2626':(dl<30?'#d97706':'#059669'); };
+  if(typeof Chart!=='undefined' && _charts.length){
     var _ref={ id:'waterRef', afterDatasetsDraw:function(chart){
         var ctx=chart.ctx, xs=chart.scales.x;
         [[18,'触发线18天','#dc2626'],[30,'水位30天','#059669']].forEach(function(rf){
@@ -2540,27 +2564,29 @@ h+='<h3 class="sh">④ 保证在售款去化专项（系统禁止下架）</h3><
           ctx.beginPath(); ctx.moveTo(px, chart.chartArea.top); ctx.lineTo(px, chart.chartArea.bottom); ctx.stroke();
           ctx.setLineDash([]); ctx.fillStyle=rf[2]; ctx.font='11px sans-serif';
           ctx.fillText(rf[1], px+3, chart.chartArea.top+11); ctx.restore(); }); } };
-    var _mk=function(cv,rows){
+    var _mkc=function(ch){
+      var cv=document.getElementById(ch.id);
+      if(!cv || cv._done) return;
+      cv._done=true;
       new Chart(cv, { type:'bar',
-        data:{ labels:rows.map(function(w){ return w.c.short; }),
-          datasets:[{ data:rows.map(function(w){ return Math.min(w.dl,45); }),
-            backgroundColor:rows.map(function(w){ return _col(w.dl); }), borderRadius:3, barThickness:16 }]},
+        data:{ labels:ch.labels,
+          datasets:[{ data:ch.data, backgroundColor:ch.bgs, borderRadius:3, barThickness:14 }]},
         options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
           plugins:{ legend:{display:false},
-            tooltip:{ callbacks:{ label:function(ctx){ var w=rows[ctx.dataIndex];
-              return w.c.code+' ｜ 可售约 '+w.dl.toFixed(1)+' 天 ｜ 希音仓'+w.c.shein+' 在途'+(w.c.ship||0)+' 本地'+w.c.loc
-                +(w.c.restockQty>0?(' ｜ 建议：定制 '+w.c.restockQty+' + 调拨 '+w.c.alloc):' ｜ 暂不补'); } } } },
+            tooltip:{ callbacks:{ label:function(ctx){ return ch.tips[ctx.dataIndex]||''; } } } },
           scales:{ x:{ min:0, max:45, title:{display:true,text:'可售天数（超45天封顶显示）'},
               grid:{ color:function(v){ return (v.tick && (v.tick.value===18||v.tick.value===30))?'#94a3b8':'rgba(148,163,184,.15)'; } } },
-              y:{ ticks:{ font:{size:11} } } } },
+              y:{ ticks:{ font:{size:10}, autoSkip:false } } } },
         plugins:[_ref] });
     };
-    _gorder.forEach(function(k,gi){
-      var cv=document.getElementById('sheinWaterCv_'+gi);
+    _charts.forEach(function(ch){
+      var cv=document.getElementById(ch.id);
       if(!cv) return;
-      var det=cv.closest ? cv.closest('details') : null;
-      if(!det || det.open){ _mk(cv, _gmap[k]); }
-      else { det.addEventListener('toggle', function(){ if(det.open && !det._done){ det._done=true; _mk(cv, _gmap[k]); } }); }
+      var dets=[], p=cv.parentElement;
+      while(p){ if(p.tagName==='DETAILS') dets.push(p); p=p.parentElement; }
+      var openNow=dets.every(function(d){ return d.open; });
+      if(openNow){ _mkc(ch); }
+      else { dets.forEach(function(det){ det.addEventListener('toggle', function(){ if(det.open && dets.every(function(d2){return d2.open;})) _mkc(ch); }); }); }
     });
   }
   }catch(e){ /* 图表异常不阻断页面交互 */ }
