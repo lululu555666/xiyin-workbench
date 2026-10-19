@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-19 18:39">
+<meta name="build-time" content="2026-10-19 18:53">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 18:39</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 18:53</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -2001,7 +2001,9 @@ function loadDetailFromRows(rows){
     var h=findCol(hdr,keys); if(h===null) return null;
     var i=colIdx(hdr,h); return (i>=0&&r)?r[i]:null;
   }
-  var out=[];
+  // 同货号多行聚合（用户 2026-10-19 截图：新导出一色一行，同名款曾被拆成十几条重复柱/重复行）。
+  // 自适应口径：组内各值全部相同→视为“款级数值逐行重复”，取单值；有差异→视为“色级数值”，求和。
+  var out=[], seen={};
   for(var i=1;i<rows.length;i++){
     var r=rows[i]; if(!r) continue;
     var code=g(r,['供货方号','供方货号']);
@@ -2009,21 +2011,33 @@ function loadDetailFromRows(rows){
     var on=String(g(r,['在架状态'])||'');
     var selling=String(g(r,['是否在售'])||'');
     if(on==='下架'||on==='售罄'||selling==='否') continue;   // 用户要求：排除售罄/下架
+    var key=String(code);
     var tier=String(g(r,['商品层次'])||'');
     var pr=num(g(r,['支付率'])); if(pr===null) pr=0;
     var sales=num(g(r,['销量'])); if(sales===null) sales=0;
     var orders=num(g(r,['支付订单数'])); if(orders===null) orders=0;
     var prep=num(g(r,['备货件数'])); if(prep===null) prep=0;
-    var st=restockStatus(tier);
-    out.push({
-      code:String(code), short:SHORT[String(code)]||String(code), cat:catOf(String(code)),
-      sub:SUB[String(code)]||'未分类', tier:tier, q:String(g(r,['质量等级'])||''), pay:pr,
-      sales30:sales, orders:orders, prep:prep, newtag:String(g(r,['昨日新品标签'])||''),
-      status:st[0], cls:st[1], vis:(pr>0?Math.round(orders/(pr/100)):0),
-      trend:TREND[String(code)]||'', age:AGE[codeOf(String(code))], rec:REC[String(code)]||''
-    });
+    var acc=seen[key];
+    if(!acc){
+      acc=seen[key]={code:key, sales:[], orders:[], prep:[], pays:[],
+        tier:'', q:String(g(r,['质量等级'])||''), newtag:String(g(r,['昨日新品标签'])||'')};
+      out.push(acc);
+    }
+    acc.sales.push(sales); acc.orders.push(orders); acc.prep.push(prep); acc.pays.push(pr);
+    if(!acc.tier&&tier) acc.tier=tier;
   }
-  return out;
+  function _aggSum(arr){ var s=0,mx=-Infinity,mn=Infinity; for(var k=0;k<arr.length;k++){ var v=arr[k]||0; s+=v; if(v>mx)mx=v; if(v<mn)mn=v; } return (mx===mn)?mx:s; }
+  function _aggAvg(arr){ var s=0,mx=-Infinity,mn=Infinity; for(var k=0;k<arr.length;k++){ var v=arr[k]||0; s+=v; if(v>mx)mx=v; if(v<mn)mn=v; } return (mx===mn)?mx:(s/arr.length); }
+  return out.map(function(a){
+    var st=restockStatus(a.tier), pr=_aggAvg(a.pays), ords=_aggSum(a.orders);
+    return {
+      code:a.code, short:SHORT[a.code]||a.code, cat:catOf(a.code),
+      sub:SUB[a.code]||'未分类', tier:a.tier, q:a.q, pay:pr,
+      sales30:_aggSum(a.sales), orders:ords, prep:_aggSum(a.prep), newtag:a.newtag,
+      status:st[0], cls:st[1], vis:(pr>0?Math.round(ords/(pr/100)):0),
+      trend:TREND[a.code]||'', age:AGE[codeOf(a.code)], rec:REC[a.code]||''
+    };
+  });
 }
 // ④ 备货信息 / 备货管理导出（兼容两类表：旧“备货管理”+ 新“备货信息”50列）
 function loadStockFromRows(rows){
@@ -2141,6 +2155,8 @@ function classify(d){
   }
   // 新款/测款期：区分「真滞销（近30天零动销）」与「在卖但系统不给单」——后者不该被误杀封补
   if(tier==='新款'||(age!==null&&age!==undefined&&age<=21)){
+    if(!(d.s7>0)&&!(d.s30>0))   // 零动销守卫（用户 2026-10-19：驯鹿书挡"新款未上架"被误标新品窗口助动）：未上架/无任何成交≠可助动
+      return {label:'新款未上架/零动销',action:'未上架或无任何成交：先备好素材等上架，上架起跑14–21天窗口再看数据；勿助动勿补货勿下单',pri:'低',dl:'上架后',owner:'你'};
     var _cov=(d.s30&&d.s30>0&&stock)? stock/(d.s30/30):null;          // 可售天数粗估（库存÷近30天日均）
     var _moving=(d.s7&&d.s7>0)||(d.s30&&d.s30>0&&_cov!==null&&_cov<30); // 近7天有成交，或库存可售已<30天=在动销（防误杀在卖的款；纯滞销 s30极少且库存够撑很久的不算）
     if(sysO!==null&&sysO!==undefined&&sysO===0&&(stock||0)>0&&age!==null&&age!==undefined&&age>14&&!_moving)
@@ -2237,9 +2253,9 @@ function computeRestock(detail,local){
       continue;
     }
     // 4) 已触发+无系统单：新品勿盲补；备货款按30天水位+本地调拨自算
-    if(lab==='新品窗口·抢转备货'){
+    if(lab==='新品窗口·抢转备货'||lab==='新款未上架/零动销'){
       d.restockQty=0;
-      d.restockNote='新品无系统单：勿盲补，先促动销';
+      d.restockNote=(lab==='新款未上架/零动销')?'未上架/零成交：勿补，等上架后看动销':'新品无系统单：勿盲补，先促动销';
       if(d.sell!==null&&d.sell!==undefined&&d.sell<=10&&sales>0)
         d.restockNote+=' ⚠可售'+d.sell+'天<货期10天：立即找买手报备防断货';
       continue;
@@ -2365,7 +2381,7 @@ function aggregate(detail,key){
 
 // ---------- 渲染 ----------
 var LAB_COLOR={'售罄断货·急需补货':'#dc2626','系统给单·可备货':'#047857','畅通可备货':'#047857','系统限单(测款/滞销)':'#b45309',
- '新品窗口·抢转备货':'#7c3aed','保证在售去化':'#1d4ed8','该清仓':'#b91c1c','停/不处理':'#b91c1c','观察':'#555'};
+ '新品窗口·抢转备货':'#7c3aed','保证在售去化':'#1d4ed8','该清仓':'#b91c1c','停/不处理':'#b91c1c','观察':'#555','新款未上架/零动销':'#6b7280'};
 function labColor(l){ return LAB_COLOR[l]||'#555'; }
 
 function render(detail,src){
@@ -2405,7 +2421,7 @@ function render(detail,src){
   var _flat=_wd.slice().sort(function(a,b){ return (a.dl===null?999:a.dl)-(b.dl===null?999:b.dl); });
   var W_ID='sheinWaterCv_all', W_labels=[],W_data=[],W_bgs=[],W_tips=[];
   _flat.forEach(function(w){
-    W_labels.push(w.c.short);
+    W_labels.push(w.c.short===w.c.code? w.c.code : (w.c.short+'·'+w.c.code));   // 同名不同货号款（如 gg10/gg10-1）加货号区分（用户 2026-10-19 截图）
     W_data.push(w.dl===null?0:Math.min(w.dl,45));
     W_bgs.push(w.dl===null?'#cbd5e1':(w.dl<15?'#dc2626':(w.dl<30?'#d97706':'#059669')));
     var lines=[w.c.code+' ｜ 款级可售约 '+(w.dl===null?'—':w.dl.toFixed(1)+' 天')+' ｜ 希音仓'+w.c.shein+' 在途'+(w.c.ship||0)+' 本地'+w.c.loc+(w.c.restockQty>0?(' ｜ 建议：定制 '+w.c.restockQty+' + 调拨 '+w.c.alloc):' ｜ 暂不补')];
@@ -2550,7 +2566,7 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
 
   // 处理优先级排序辅助（用户拍板 2026-10-16 晚：相同板块一律按处理优先级从高到低）
   var _priOrd={'高':0,'中':1,'低':2};
-  var _labOrd={'售罄断货·急需补货':0,'系统给单·可备货':1,'畅通可备货':2,'新品窗口·抢转备货':3,'系统限单(测款/滞销)':4,'保证在售去化':5,'该清仓':6,'观察':7,'停/不处理':8};
+  var _labOrd={'售罄断货·急需补货':0,'系统给单·可备货':1,'畅通可备货':2,'新品窗口·抢转备货':3,'系统限单(测款/滞销)':4,'保证在售去化':5,'该清仓':6,'观察':7,'新款未上架/零动销':7,'停/不处理':8};
 
   // ② 系统给单/限单诊断
   h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #0d9488">二、备货诊断 · 系统给单/限单，谁该下单谁被卡</h2>';
@@ -2565,9 +2581,10 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       '该清仓':'120天内主动清仓，避免强制30%清仓',
       '售罄断货·急需补货':'希音仓卖空被下架但近期仍有动销：立即按30天水位自算补货（本地调拨优先），沟通买手加急上架',
       '停/不处理':'不再备货，自然清仓（主动停产/退供/清仓）',
-      '观察':'维持，跟踪动销'
+      '观察':'维持，跟踪动销',
+      '新款未上架/零动销':'未上架/零成交：备素材等上架，先不投不动'
     };
-    var order=['售罄断货·急需补货','系统给单·可备货','畅通可备货','新品窗口·抢转备货','系统限单(测款/滞销)','保证在售去化','该清仓','观察','停/不处理'];
+    var order=['售罄断货·急需补货','系统给单·可备货','畅通可备货','新品窗口·抢转备货','系统限单(测款/滞销)','保证在售去化','该清仓','观察','新款未上架/零动销','停/不处理'];
     var g={};
     for(var i=0;i<detail.length;i++){ var L=detail[i].label||'其他'; (g[L]=g[L]||[]).push(detail[i].short); }
     var out='';
