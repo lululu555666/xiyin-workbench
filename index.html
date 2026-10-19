@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-19 22:09">
+<meta name="build-time" content="2026-10-19 22:19">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 22:09</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 22:19</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -571,8 +571,11 @@ tbody tr.total-row:hover{background:#ede9fe}
       top:52px 会把表头推出容器被裁掉，用户截图"输入后表头没了"）；
    ② 希音模块的表不用 tbl-wrap（随整页滚动）：吸顶参照物=页面，top 必须=顶栏高度 52px——
       否则表头滑到 sticky 顶栏（z-index:100）后面被盖住 = 用户 2026-10-19"表头常显功能又没了"。 */
-thead th{top:52px !important;z-index:50 !important;box-shadow:0 2px 4px rgba(15,23,42,.10)}
+thead th{top:var(--shTop,64px) !important;z-index:50 !important;box-shadow:0 2px 4px rgba(15,23,42,.10)}
 .tbl-wrap thead th{top:0 !important}
+/* R31h：吸顶表头要醒目（用户 2026-10-19："表头下拉时不够显眼"）——希音模块表头深底白字+投影，滚到哪都一眼可见 */
+#sheinOut thead th{background:#1e3a8a !important;color:#fff !important;border-bottom:none !important;box-shadow:0 3px 10px rgba(15,23,42,.35) !important}
+#sheinOut thead th small,#sheinOut thead th .mut{color:#c7d2fe}
 /* 基底 th.sortable{position:relative} 优先级(0-1-1)压过 thead th{position:sticky}(0-0-2)，可排序表头从未生效过 sticky——此处拉回 sticky */
 th.sortable{position:sticky}
 .main{overflow:visible !important}
@@ -615,7 +618,7 @@ table td,table th{font-variant-numeric:tabular-nums}
 
 /* ===== 分析状态 Toast（固定右上，成功绿勾 / 失败红，4.2s 自动消失）===== */
 #sheinToast{position:fixed;top:64px;right:18px;z-index:9999;max-width:400px;background:#fff;border:1px solid var(--border);border-left:4px solid #047857;border-radius:10px;box-shadow:0 10px 34px rgba(15,23,42,.20);padding:12px 14px;font-size:13px;line-height:1.6;opacity:0;transform:translateY(-8px);pointer-events:none;transition:opacity .25s ease,transform .25s ease}
-#sheinToast.show{opacity:1;transform:none}
+#sheinToast.show{opacity:1;transform:none;pointer-events:auto}
 #sheinToast.err{border-left-color:#b91c1c}
 #sheinToast .t-title{font-weight:700;color:#047857;display:flex;align-items:center;gap:6px;margin-bottom:3px}
 #sheinToast.err .t-title{color:#b91c1c}
@@ -637,7 +640,7 @@ table td,table th{font-variant-numeric:tabular-nums}
       <div class="sf-item"><b>① 现货库存管理.xlsx（可选·覆盖内嵌）</b>后台正常导出即可：供货方号/商品层次/近30天销量/近7天销量/上架状态（一行一色的新版导出已支持，自动按款合并）<input type="file" id="sheinF1" accept=".xlsx,.xls"></div>
       <div class="sf-item sf-auto" id="sfgLocalNote"><b>② 本地库存（实时同步）</b>来自《进销存统计表(5.15优化)》库存银行，按品名→供货方号映射，无需上传。在软件内打开页面时自动读取最新库存并刷新补货计算（纯浏览器/GitHub 版为构建时快照）。<input type="file" id="sheinF3" accept=".xlsx,.xls" title="一般无需上传；仅当你要用其他本地库存表覆盖时使用"></div>
       <div class="sf-item"><b>③ 备货信息.xlsx（可选·覆盖内嵌）</b>系统下单数/建议下单数/SHEIN仓库存/在途/可售天数/近7天销量/属性集（一行一色的新版导出已支持：自动按款合并+逐色真实明细）<input type="file" id="sheinF4" accept=".xlsx,.xls"></div>
-      <div class="sf-item"><b>④ 商品分析.xlsx（可选·潜力款识别）</b>后台「商品分析」导出：曝光/点击/加购/支付数据。上传后自动识别「曝光好+点击好+加购好+销量还没起来+库存紧」的潜力款，给小批量测款建议；不上传则跳过，不影响其他分析<input type="file" id="sheinF5" accept=".xlsx,.xls"></div>
+      <!-- ④ 商品分析入口已撤（2026-10-19 用户确认：后台导不出曝光/点击列，此入口永远等不到合法格式；潜力识别改走支付率降级方案，解析器 loadAnaFromRows 保留休眠，日后系统可导出时一句话加回） -->
     </div>
     <div class="sf-actions">
       <button class="sf-run" id="sheinRun">运行分析</button>
@@ -2654,10 +2657,13 @@ function computeRestock(detail,local){
     if(loc>=need){
       d.alloc=Math.round(need); d.restockQty=0;
       d.restockNote='本地调拨'+need.toFixed(0)+'件即可，无需定制'+urgent;
+      // R31g：已跌破触发线的款，①表动作同步改为"已触发"表述（classify 的"跌破再补"是对未触发款说的，留着会自相矛盾）
+      d.action='已跌破15天触发线（可售'+Math.floor(daysLeft)+'天）：本地调拨'+need.toFixed(0)+'件补至30天水位（本地库存'+Math.round(loc)+'件充足，无需工厂定制）'+urgent;
       continue;
     }
     d.restockQty=Math.round(need-loc); d.alloc=Math.round(loc);
     d.restockNote='定制'+Math.round(need-loc)+'件+本地调拨'+Math.round(loc)+'件（按30天水位自算）'+urgent;
+    d.action='已跌破15天触发线（可售'+Math.floor(daysLeft)+'天）：工厂定制'+Math.round(need-loc)+'件+本地调拨'+Math.round(loc)+'件，补至30天水位'+urgent;
   }
   return detail;
 }
@@ -2865,7 +2871,8 @@ function render(detail,src){
     W_labels.push(w.c.short===w.c.code? w.c.code : (w.c.short+'·'+w.c.code));   // 同名不同货号款（如 gg10/gg10-1）加货号区分（用户 2026-10-19 截图）
     W_data.push(w.dl===null?0:Math.min(w.dl,45));
     W_bgs.push(w.dl===null?'#cbd5e1':(w.dl<15?'#dc2626':(w.dl<30?'#d97706':'#059669')));
-    var lines=[w.c.code+' ｜ 款级可售约 '+(w.dl===null?'—':w.dl.toFixed(1)+' 天')+' ｜ 希音仓'+w.c.shein+' 在途'+(w.c.ship||0)+' 本地'+w.c.loc+((effRq(w.c)>0)?(' ｜ 建议：定制 '+effRq(w.c)+' + 调拨 '+effAlloc(w.c)):' ｜ 暂不补')];   // R31c：与①表同口径（款级与色级取大）
+    var _adv=(effRq(w.c)>0)?(' ｜ 建议：定制 '+effRq(w.c)+' + 调拨 '+effAlloc(w.c)):(effAlloc(w.c)>0?(' ｜ 建议：本地调拨 '+effAlloc(w.c)+' 件（本地够，无需定制）'):' ｜ 暂不补');   // R31g：调拨款不再误写"暂不补"
+    var lines=[w.c.code+' ｜ 款级可售约 '+(w.dl===null?'—':w.dl.toFixed(1)+' 天')+' ｜ 希音仓'+w.c.shein+' 在途'+(w.c.ship||0)+' 本地'+w.c.loc+_adv];   // R31c：与①表同口径（款级与色级取大）
     var _tp=colorPool(w.c.skuList, w.c.code);   // R31b：与①表口径一致，逐色天数用色池（单装+组合+多件折件）
     (w.c.skuList||[]).forEach(function(x){
       var ci=comboParse(x.a, w.c.code);
@@ -3402,6 +3409,11 @@ function status(t,isErr){
 function toast(title, sub, isErr, sticky){
   var t=document.getElementById('sheinToast');
   if(!t) return;
+  // R31g：关闭监听懒绑定——模块加载时希音层可能还没挂载（getElementById 为空绑了寂寞），必须在弹的时刻补绑
+  if(!t._bound){
+    t._bound=true;
+    t.addEventListener('click',function(){ t.classList.remove('show'); clearTimeout(t._timer); });
+  }
   t.className = isErr ? 'err' : '';
   t.innerHTML = '<div class="t-title"><span class="t-ico">'+(isErr?'⚠':'✓')+'</span>'+title+'</div>'+(sub?'<div class="t-sub">'+sub+'</div>':'')+'<span class="t-x" title="点击关闭">×</span>';
   t.title='点击关闭';
@@ -3414,6 +3426,18 @@ try{   // 常驻弹窗的关闭方式：点一下就收起
   var _tEl=document.getElementById('sheinToast');
   if(_tEl&&!_tEl._bound){ _tEl._bound=true; _tEl.addEventListener('click',function(){ _tEl.classList.remove('show'); clearTimeout(_tEl._timer); }); }
 }catch(_e){}
+// R31h：吸顶表头 top 改为实测顶栏高度（旧写死 52px < 顶栏实际高度，表头文字上沿被埋；窄屏媒体查询还会变矮，故监听 resize 重测）
+(function(){
+  var _m=function(){
+    try{
+      var _tb=document.querySelector('.topbar');
+      var _h=_tb?Math.ceil(_tb.getBoundingClientRect().height):64;
+      document.documentElement.style.setProperty('--shTop',(_h+2)+'px');
+    }catch(_e){}
+  };
+  _m();
+  try{ window.addEventListener('resize',_m); }catch(_e){}
+})();
 
 var busy=false,_restoredAny=false,_srvArchive=null;   // R31g：存档恢复状态标记——本地库存同步回调不得覆盖已恢复/恢复中的存档（"打开仍旧旧数据"根因）
 function analyze(detailRows,stockRows,localRows,srcNote,anaRows){
@@ -3547,7 +3571,7 @@ document.getElementById('sheinRun').addEventListener('click',function(){
   var f1=gf('sheinF1');   // ① 现货库存管理（可选）
   var f4=gf('sheinF4');   // ④ 备货信息（可选，默认内嵌）
   var f3=gf('sheinF3');   // ③ 本地库存（可选，默认内嵌）
-  var f5=gf('sheinF5');   // ⑤ 商品分析（可选，潜力款识别）
+  // ⑤ 商品分析入口已撤（2026-10-19 用户确认：后台导不出曝光/点击列，永远等不到合法格式；潜力识别走支付率降级方案）
   // R31d（用户 2026-10-19 蝙蝠两款"明明有销量判没有"）：根因=不选①现货就点运行分析 → 静默回退内嵌 10-15 旧基底，
   // 旧支付率/旧销量被当成最新数据展示。修：有快照→保持快照并明确提示；无快照→显式警告"当前为内嵌旧数据"。
   if(!f1){
@@ -3565,9 +3589,8 @@ document.getElementById('sheinRun').addEventListener('click',function(){
   }
   var stockFile=f4;   // ② 商品分析入口已删（2026-10-19 用户确认：它只是④的备胎，传④即被忽略）
   var p1=f1?readSheet(f1):Promise.resolve(baseRows());
-  var p5=f5?readSheet(f5):Promise.resolve(null);
-  Promise.all([p1, stockFile?readSheet(stockFile):Promise.resolve(null), f3?readSheet(f3):Promise.resolve(null), p5])
-    .then(function(r){ analyze(r[0],r[1],r[2], f1?'来自上传的《现货库存管理》导出':'内嵌22款（商品明细列表 2026-10-15）', r[3]); })
+  Promise.all([p1, stockFile?readSheet(stockFile):Promise.resolve(null), f3?readSheet(f3):Promise.resolve(null)])
+    .then(function(r){ analyze(r[0],r[1],r[2], f1?'来自上传的《现货库存管理》导出':'内嵌22款（商品明细列表 2026-10-15）', null); })
     .catch(function(err){ status('出错：'+err.message,true); toast('分析失败', err.message, true); });
 });
 // 曝光截图上传入口已随②-C板块移除（2026-10-19 用户拍板：手录数字不划算）
