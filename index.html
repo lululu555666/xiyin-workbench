@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-19 22:19">
+<meta name="build-time" content="2026-10-19 22:35">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 22:19</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 22:35</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -2201,6 +2201,32 @@ var BASE=[
 var LOCAL_EMBED={"ax01-爱心挂钩-粉色": {"loc": 6, "out30": 0, "names": {"爱心挂钩粉色": 6}}, "ax01-爱心挂钩-蓝色": {"loc": 6, "out30": 0, "names": {"爱心挂钩蓝色": 6}}, "ax01-爱心挂钩-紫色": {"loc": 6, "out30": 0, "names": {"爱心挂钩紫色": 6}}, "gg08": {"loc": 105, "out30": 85, "names": {"壁虎红铜": 9, "壁虎黄铜": 26, "壁虎墨绿": 27, "壁虎嫩绿": 17, "壁虎锈色": 26}}, "gg13-1-船锚": {"loc": 21, "out30": 0, "names": {"船锚黄铜": 11, "船锚蓝色": 10}}, "xn01-大小只小鸟摆件": {"loc": 5, "out30": 0, "names": {"大小只小鸟摆件": 5}}, "zs01-海龟-古铜金-1PC": {"loc": 2, "out30": 13, "names": {"海龟古铜金色": 2}}, "gg04-1": {"loc": 580, "out30": 434, "names": {"鲸鱼红铜尾巴": 91, "鲸鱼黄铜尾巴": 130, "鲸鱼深蓝尾巴": 122, "鲸鱼锈色尾巴": 115, "鲸鱼原铁尾巴": 122}}, "gg09": {"loc": 543, "out30": 563, "names": {"马蹄单钩黑色": 98, "马蹄单钩红铜": 104, "马蹄单钩黄铜": 115, "马蹄单钩蓝色": 20, "马蹄单钩青铜鎏金色": 23, "马蹄单钩锈色": 118, "马蹄单钩原铁": 65}}, "gg06": {"loc": 593, "out30": 143, "names": {"马蹄黑色": 111, "马蹄红铜": 97, "马蹄黄铜": 85, "马蹄小马蹄": 143, "马蹄锈色": 92, "马蹄原铁色": 65}}, "gg10-1": {"loc": 466, "out30": 662, "names": {"马头双钩黑色": 103, "马头双钩红铜": 56, "马头双钩黄铜": 70, "马头双钩蓝色": 25, "马头双钩锈色": 204, "马头双钩原铁": 8}}, "gg20-美人鱼-锈色": {"loc": 0, "out30": 29, "names": {"美人鱼挂钩锈色": 0}}, "gg16-公牛挂钩-红铜色": {"loc": 27, "out30": 20, "names": {"牛角红铜": 27}}, "gg16-公牛挂钩-黄铜色": {"loc": 23, "out30": 10, "names": {"牛角黄铜": 23}}, "gg16-公牛挂钩-墨绿色": {"loc": 22, "out30": 10, "names": {"牛角墨绿": 22}}, "gg16-公牛挂钩-锈色": {"loc": 25, "out30": 25, "names": {"牛角锈色": 25}}, "gg15-竖琴挂钩-红铜色": {"loc": 36, "out30": 0, "names": {"竖琴双钩红铜": 36}}, "gg19-天鹅挂钩-锈色": {"loc": 30, "out30": 0, "names": {"天鹅锈色": 30}}, "gs03-蝙蝠-暗夜紫色": {"loc": 7, "out30": 8, "names": {"无钩蝙蝠暗紫": 7}}, "gs03-蝙蝠-黑": {"loc": 0, "out30": 35, "names": {"无钩蝙蝠黑色": 0}}, "gs03-蝙蝠-红铜色": {"loc": 17, "out30": 8, "names": {"无钩蝙蝠红铜": 17}}, "gs03-蝙蝠-黄铜色": {"loc": 25, "out30": 38, "names": {"无钩蝙蝠黄铜": 25}}, "gs03-蝙蝠-锈色": {"loc": 10, "out30": 8, "names": {"无钩蝙蝠锈色": 10}}, "gg07": {"loc": 524, "out30": 21, "names": {"小鸟弯钩黑色": 84, "小鸟弯钩红铜": 94, "小鸟弯钩黄铜": 105, "小鸟弯钩蓝色": 23, "小鸟弯钩青铜鎏金色": 38, "小鸟弯钩锈色": 156, "小鸟弯钩银色": 24}}, "gg17-爪形挂钩-黄铜色*2": {"loc": 14, "out30": 0, "names": {"小爪双钩黄铜": 14}}, "BS-05": {"loc": 12, "out30": 8, "names": {"驯鹿书挡锈色": 12}}, "gg11": {"loc": 342, "out30": 107, "names": {"章鱼黑色": 35, "章鱼红铜": 64, "章鱼黄铜": 75, "章鱼蓝色": 44, "章鱼锈色": 93, "章鱼银色": 31}}};
 // 内嵌备货信息（来自《备货信息-8369860_20261016104235》102 SKU 导出，按供货方号聚合，2026-10-16）
 var STOCK_EMBED={"gg09": {"stock": 225, "overseas": 1, "sys": 0, "suggest": 0, "merch": 0, "s30": 449, "s7": 100, "age": 198, "sell": 6.9, "ship": 10, "vendor": 5500, "tier": "备货款A", "q": "A1", "status": "已上架", "noOrder": false, "price": "15.40", "dpred": 16.5, "skus": 11}, "gg10-1": {"stock": 176, "overseas": 1, "sys": 0, "suggest": 0, "merch": 0, "s30": 389, "s7": 86, "age": 212, "sell": 8.6, "ship": 35, "vendor": 5000, "tier": "备货款A", "q": "A2", "status": "已上架", "noOrder": false, "price": "10.33", "dpred": 16.5, "skus": 10}, "gg04-1": {"stock": 178, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 357, "s7": 68, "age": 212, "sell": 9.0, "ship": 0, "vendor": 4000, "tier": "备货款A", "q": "A2", "status": "已上架", "noOrder": false, "price": "9.80", "dpred": 9.6, "skus": 8}, "gg11": {"stock": 68, "overseas": 0, "sys": 10, "suggest": 10, "merch": 0, "s30": 110, "s7": 21, "age": 218, "sell": 10.0, "ship": 10, "vendor": 4100, "tier": "备货款B", "q": "A1", "status": "已上架", "noOrder": false, "price": "15.86", "dpred": 3.0, "skus": 10}, "gg08": {"stock": 49, "overseas": 0, "sys": 2, "suggest": 2, "merch": 0, "s30": 67, "s7": 19, "age": 198, "sell": 6.7, "ship": 2, "vendor": 2500, "tier": "备货款B", "q": "A1", "status": "已上架", "noOrder": false, "price": "14.94", "dpred": 2.7, "skus": 5}, "gg06": {"stock": 116, "overseas": 5, "sys": 0, "suggest": 0, "merch": 0, "s30": 121, "s7": 18, "age": 302, "sell": 6.7, "ship": 0, "vendor": 6700, "tier": "备货款B", "q": "A1", "status": "已上架", "noOrder": false, "price": "12.50", "dpred": 2.6, "skus": 14}, "gg07": {"stock": 70, "overseas": 6, "sys": 0, "suggest": 0, "merch": 0, "s30": 63, "s7": 16, "age": 233, "sell": 7.1, "ship": 0, "vendor": 1699, "tier": "备货款B", "q": "B2", "status": "已上架", "noOrder": false, "price": "14.85", "dpred": 2.1, "skus": 9}, "gg20-美人鱼-锈色": {"stock": 12, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 17, "s7": 12, "age": 24, "sell": 7.1, "ship": 0, "vendor": 0, "tier": "新款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "12.72", "dpred": 1.7, "skus": 1}, "gs03-蝙蝠-黄铜色": {"stock": 19, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 17, "s7": 9, "age": 20, "sell": 14.6, "ship": 0, "vendor": 197, "tier": "新款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "17.81", "dpred": 1.3, "skus": 1}, "gs03-蝙蝠-黑": {"stock": 10, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 27, "s7": 9, "age": 83, "sell": 15.4, "ship": 10, "vendor": 500, "tier": "备货款B", "q": "B1", "status": "已上架", "noOrder": false, "price": "17.81", "dpred": 1.3, "skus": 1}, "gg16-公牛挂钩-锈色": {"stock": 13, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 24, "s7": 3, "age": 54, "sell": 32.5, "ship": 0, "vendor": 500, "tier": "保证在售款", "q": "B2", "status": "已上架", "noOrder": false, "price": "17.50", "dpred": 0.4, "skus": 1}, "zs01-海龟-古铜金-1PC": {"stock": 6, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 2, "s7": 2, "age": 11, "sell": 36.7, "ship": 5, "vendor": 500, "tier": "新款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "23.04", "dpred": 0.3, "skus": 1}, "gg16-公牛挂钩-黄铜色": {"stock": 4, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 9, "s7": 2, "age": 127, "sell": 30.0, "ship": 5, "vendor": 500, "tier": "保证在售款", "q": "B2", "status": "已上架", "noOrder": false, "price": "17.50", "dpred": 0.3, "skus": 1}, "gg16-公牛挂钩-墨绿色": {"stock": 9, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 6, "s7": 1, "age": 65, "sell": 90.0, "ship": 0, "vendor": 500, "tier": "保证在售款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "17.50", "dpred": 0.1, "skus": 1}, "gg16-公牛挂钩-红铜色": {"stock": 16, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 15, "s7": 1, "age": 69, "sell": 160.0, "ship": 0, "vendor": 500, "tier": "保证在售款", "q": "B2", "status": "已上架", "noOrder": false, "price": "17.50", "dpred": 0.1, "skus": 1}, "gg13-1-船锚": {"stock": 9, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 2, "s7": 1, "age": 45, "sell": 40.0, "ship": 0, "vendor": 1000, "tier": "保证在售款", "q": "B2", "status": "已上架", "noOrder": false, "price": "18.24", "dpred": 0.1, "skus": 2}, "gg15-竖琴挂钩-红铜色": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 2, "s7": 1, "age": 139, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "无判断", "status": "已上架", "noOrder": false, "price": "9.50", "dpred": 0.1, "skus": 1}, "gs03-蝙蝠-暗夜紫色": {"stock": 8, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 20, "sell": 80.0, "ship": 0, "vendor": 200, "tier": "新款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "17.81", "dpred": 0.0, "skus": 1}, "gs03-蝙蝠-红铜色": {"stock": 7, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 1, "s7": 0, "age": 15, "sell": 70.0, "ship": 0, "vendor": 200, "tier": "新款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "17.81", "dpred": 0.0, "skus": 1}, "gg17-爪形挂钩-黄铜色*2": {"stock": 8, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 7, "sell": 80.0, "ship": 0, "vendor": 500, "tier": "新款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "14.24", "dpred": 0.0, "skus": 1}, "gg15-竖琴挂钩-红铜色*2": {"stock": 10, "overseas": 2, "sys": 0, "suggest": 0, "merch": 0, "s30": 1, "s7": 0, "age": 81, "sell": 100.0, "ship": 0, "vendor": 500, "tier": "保证在售款", "q": "B2", "status": "已上架", "noOrder": false, "price": "15.59", "dpred": 0.0, "skus": 1}, "gg19-天鹅挂钩-锈色": {"stock": 8, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 1, "s7": 0, "age": 54, "sell": 80.0, "ship": 0, "vendor": 500, "tier": "保证在售款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "13.58", "dpred": 0.0, "skus": 1}, "gg-18-船锚双钩-黑色": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 112, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "无判断", "status": "已上架", "noOrder": false, "price": "10.24", "dpred": 0.0, "skus": 1}, "gg17-爪形挂钩-黄铜色": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 123, "sell": 0.0, "ship": 0, "vendor": 500, "tier": "自主停产", "q": "B2", "status": "已上架", "noOrder": false, "price": "7.11", "dpred": 0.0, "skus": 1}, "TC-1-香薰炉": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 154, "sell": 0.0, "ship": 0, "vendor": 1000, "tier": "退供款", "q": "无判断", "status": "已上架", "noOrder": false, "price": "4.10", "dpred": 0.0, "skus": 2}, "TCH-陶瓷花": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 179, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "", "status": "已上架", "noOrder": false, "price": "4.50", "dpred": 0.0, "skus": 2}, "gs03-xingxing-B": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 155, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "", "status": "已上架", "noOrder": false, "price": "6.56", "dpred": 0.0, "skus": 2}, "gs02": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 177, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "", "status": "已上架", "noOrder": false, "price": "2.20", "dpred": 0.0, "skus": 2}, "BS-03": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 183, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "", "status": "已上架", "noOrder": false, "price": "4.20", "dpred": 0.0, "skus": 1}, "gs03-xingxing-A": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 155, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "无判断", "status": "已上架", "noOrder": false, "price": "7.52", "dpred": 0.0, "skus": 2}, "xl01-bianfu": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 186, "sell": 0.0, "ship": 0, "vendor": 0, "tier": "自主停产", "q": "", "status": "已上架", "noOrder": false, "price": "8.90", "dpred": 0.0, "skus": 1}, "zp01": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 205, "sell": 0.0, "ship": 0, "vendor": 500, "tier": "退供款", "q": "", "status": "已上架", "noOrder": false, "price": "7.50", "dpred": 0.0, "skus": 1}, "hh01": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 340, "sell": 0.0, "ship": 0, "vendor": 500, "tier": "退供款", "q": "", "status": "已上架", "noOrder": false, "price": "20.00", "dpred": 0.0, "skus": 1}, "cjj01": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 340, "sell": 0.0, "ship": 0, "vendor": 200, "tier": "退供款", "q": "", "status": "已上架", "noOrder": false, "price": "6.60", "dpred": 0.0, "skus": 2}, "zwj01": {"stock": 0, "overseas": 0, "sys": 0, "suggest": 0, "merch": 0, "s30": 0, "s7": 0, "age": 362, "sell": 0.0, "ship": 0, "vendor": 1000, "tier": "退供款", "q": "", "status": "已上架", "noOrder": false, "price": "10.00", "dpred": 0.0, "skus": 1}, "skudetail": {"gg09": [{"a": "均码", "s7": 9.0, "s30": 42.0, "sh": 11.0, "sell": 9.5}, {"a": "黄铜色", "s7": 18.0, "s30": 74.0, "sh": 32.0, "sell": 15.2}, {"a": "红铜色", "s7": 23.0, "s30": 88.0, "sh": 24.0, "sell": 10.0}, {"a": "黑色", "s7": 12.0, "s30": 59.0, "sh": 33.0, "sell": 18.3}, {"a": "原铁色", "s7": 5.0, "s30": 29.0, "sh": 12.0, "sell": 7.5}, {"a": "锈色", "s7": 25.0, "s30": 113.0, "sh": 45.0, "sell": 9.0}, {"a": "锈色+原铁色", "s7": 1.0, "s30": 5.0, "sh": 15.0, "sell": 150.0}, {"a": "锈色+黑色", "s7": 5.0, "s30": 14.0, "sh": 20.0, "sell": 40.0}, {"a": "蓝色", "s7": 2.0, "s30": 5.0, "sh": 15.0, "sell": 30.0}, {"a": "青铜鎏金色", "s7": 0, "s30": 21.0, "sh": 12.0, "sell": 60.0}, {"a": "红铜色+黄铜色", "s7": 1.0, "s30": 2.0, "sh": 9.0, "sell": 45.0}], "gg10-1": [{"a": "1PC", "s7": 10.0, "s30": 43.0, "sh": 20.0, "sell": 12.5}, {"a": "黑色", "s7": 17.0, "s30": 67.0, "sh": 14.0, "sell": 10.4}, {"a": "黄铜色", "s7": 16.0, "s30": 52.0, "sh": 17.0, "sell": 9.4}, {"a": "锈色-2pcs", "s7": 22.0, "s30": 151.0, "sh": 38.0, "sell": 9.0}, {"a": "原铁色", "s7": 11.0, "s30": 41.0, "sh": 27.0, "sell": 15.0}, {"a": "红铜色", "s7": 8.0, "s30": 20.0, "sh": 5.0, "sell": 9.3}, {"a": "锈色+原铁色", "s7": 2.0, "s30": 7.0, "sh": 12.0, "sell": 24.0}, {"a": "黑色+原铁色", "s7": 0, "s30": 9.0, "sh": 9.0, "sell": 90.0}, {"a": "锈色+黑色", "s7": 2.0, "s30": 3.0, "sh": 23.0, "sell": 20.9}, {"a": "蓝色", "s7": 0, "s30": 4.0, "sh": 14.0, "sell": 140.0}], "gg04-1": [{"a": "1PC", "s7": 3.0, "s30": 23.0, "sh": 11.0, "sell": 27.5}, {"a": "1PC-红铜色", "s7": 12.0, "s30": 36.0, "sh": 7.0, "sell": 10.0}, {"a": "1PC-原铁色", "s7": 8.0, "s30": 38.0, "sh": 19.0, "sell": 17.3}, {"a": "1PC-黄铜色", "s7": 15.0, "s30": 63.0, "sh": 10.0, "sell": 9.5}, {"a": "锈色+原铁色", "s7": 0, "s30": 16.0, "sh": 10.0, "sell": 100.0}, {"a": "黄铜色+红铜色", "s7": 1.0, "s30": 7.0, "sh": 12.0, "sell": 120.0}, {"a": "1PC-蓝色", "s7": 26.0, "s30": 141.0, "sh": 76.0, "sell": 20.5}, {"a": "蓝色+原铁色", "s7": 7.0, "s30": 39.0, "sh": 14.0, "sell": 14.0}], "gg06": [{"a": "D", "s7": 0, "s30": 11.0, "sh": 9.0, "sell": 90.0}, {"a": "E", "s7": 3.0, "s30": 12.0, "sh": 6.0, "sell": 15.0}, {"a": "F", "s7": 0, "s30": 1.0, "sh": 6.0, "sell": 60.0}, {"a": "C", "s7": 6.0, "s30": 24.0, "sh": 11.0, "sell": 12.2}, {"a": "B", "s7": 9.0, "s30": 33.0, "sh": 31.0, "sell": 23.8}, {"a": "A", "s7": 0, "s30": 8.0, "sh": 10.0, "sell": 100.0}, {"a": "2 x C", "s7": 1.0, "s30": 5.0, "sh": 7.0, "sell": 70.0}, {"a": "A+C", "s7": 2.0, "s30": 4.0, "sh": 2.0, "sell": 6.7}, {"a": "2 * A", "s7": 0, "s30": 3.0, "sh": 4.0, "sell": 40.0}, {"a": "2 * D", "s7": 2.0, "s30": 13.0, "sh": 8.0, "sell": 26.7}, {"a": "A+D", "s7": 0, "s30": 1.0, "sh": 5.0, "sell": 50.0}, {"a": "2*B", "s7": 0, "s30": 6.0, "sh": 8.0, "sell": 80.0}, {"a": "A+B", "s7": 0, "s30": 1.0, "sh": 7.0, "sell": 70.0}, {"a": "B+C", "s7": 0, "s30": 2.0, "sh": 5.0, "sell": 50.0}], "gg11": [{"a": "A", "s7": 0, "s30": 13.0, "sh": 18.0, "sell": 180.0}, {"a": "B", "s7": 1.0, "s30": 2.0, "sh": 1.0, "sell": 10.0}, {"a": "E-黑色", "s7": 3.0, "s30": 22.0, "sh": 8.0, "sell": 20.0}, {"a": "D-银色", "s7": 4.0, "s30": 16.0, "sh": 15.0, "sell": 25.0}, {"a": "C-锈色", "s7": 4.0, "s30": 6.0, "sh": 4.0, "sell": 6.7}, {"a": "黄铜色+红铜色", "s7": 0, "s30": 1.0, "sh": 4.0, "sell": 40.0}, {"a": "2*黄铜色", "s7": 0, "s30": 1.0, "sh": 4.0, "sell": 40.0}, {"a": "2*红铜色", "s7": 0, "s30": 0, "sh": 4.0, "sell": 40.0}, {"a": "2*锈色", "s7": 0, "s30": 0, "sh": 3.0, "sell": 30.0}, {"a": "F-蓝色", "s7": 10.0, "s30": 52.0, "sh": 7.0, "sell": 5.0}], "gg08": [{"a": "均码", "s7": 3.0, "s30": 16.0, "sh": 8.0, "sell": 20.0}, {"a": "红铜色", "s7": 3.0, "s30": 12.0, "sh": 20.0, "sell": 50.0}, {"a": "锈色", "s7": 4.0, "s30": 8.0, "sh": 14.0, "sell": 23.3}, {"a": "黄铜色", "s7": 3.0, "s30": 12.0, "sh": 3.0, "sell": 7.5}, {"a": "亮绿色", "s7": 3.0, "s30": 16.0, "sh": 4.0, "sell": 10.0}], "gg07": [{"a": "1PC", "s7": 2.0, "s30": 7.0, "sh": 6.0, "sell": 20.0}, {"a": "2pcs", "s7": 6.0, "s30": 16.0, "sh": 2.0, "sell": 5.6}, {"a": "黑色-1PC", "s7": 0, "s30": 4.0, "sh": 9.0, "sell": 90.0}, {"a": "黑色-2pcs", "s7": 1.0, "s30": 4.0, "sh": 8.0, "sell": 80.0}, {"a": "1PC-银色", "s7": 0, "s30": 3.0, "sh": 9.0, "sell": 90.0}, {"a": "1PC-红铜", "s7": 1.0, "s30": 7.0, "sh": 4.0, "sell": 40.0}, {"a": "1PC-黄铜", "s7": 5.0, "s30": 11.0, "sh": 6.0, "sell": 8.6}, {"a": "1PC-蓝色", "s7": 0, "s30": 9.0, "sh": 7.0, "sell": 70.0}, {"a": "青铜鎏金色", "s7": 1.0, "s30": 3.0, "sh": 18.0, "sell": 180.0}], "gg13-1-船锚": [{"a": "蓝色", "s7": 1.0, "s30": 3.0, "sh": 5.0, "sell": 50.0}, {"a": "黄铜色", "s7": 0, "s30": 1.0, "sh": 4.0, "sell": 40.0}]}};
+// 内嵌商品分析流量数据（2026-10-19 从用户《商品分析》页截图逐格读取并 42 组比例交叉校验，统计期 10/12-10/18 近7天；
+// 后台导不出曝光列，此为唯一可靠来源。暗夜紫两个 SKC 已合并；gg16 四色为独立货号款。覆盖 20/22 货号，缺 gg13-1-船锚、gs03-蝙蝠-黄铜色）
+var ANA_EMBED=[
+  {"code":"gg20-美人鱼-锈色","exp":7478,"vis":307,"ctr":4.11,"cart":58,"cartq":60,"cartr":18.89,"pay":5,"payr":1.63},
+  {"code":"gg16-公牛挂钩-黄铜色","exp":3262,"vis":107,"ctr":3.28,"cart":21,"cartq":22,"cartr":19.63,"pay":2,"payr":1.87},
+  {"code":"gs03-蝙蝠-红铜色","exp":1529,"vis":134,"ctr":8.76,"cart":5,"cartq":5,"cartr":3.73,"pay":1,"payr":0.75},
+  {"code":"gs03-蝙蝠-暗夜紫色","exp":12335,"vis":432,"ctr":3.50,"cart":59,"cartq":61,"cartr":13.66,"pay":7,"payr":1.62},
+  {"code":"zs01-海龟-古铜金-1PC","exp":2001,"vis":37,"ctr":1.85,"cart":3,"cartq":5,"cartr":8.11,"pay":1,"payr":2.70},
+  {"code":"gg16-公牛挂钩-墨绿色","exp":301,"vis":56,"ctr":18.60,"cart":3,"cartq":3,"cartr":5.36,"pay":1,"payr":1.79},
+  {"code":"gs03-蝙蝠-锈色","exp":174,"vis":24,"ctr":13.79,"cart":1,"cartq":1,"cartr":4.17,"pay":1,"payr":4.17},
+  {"code":"gg16-公牛挂钩-红铜色","exp":950,"vis":56,"ctr":5.89,"cart":3,"cartq":6,"cartr":5.36,"pay":1,"payr":1.79},
+  {"code":"gg11-1","exp":269,"vis":11,"ctr":4.09,"cart":0,"cartq":0,"cartr":0,"pay":0,"payr":0},
+  {"code":"gg15-竖琴挂钩-红铜色*2","exp":1209,"vis":11,"ctr":0.91,"cart":0,"cartq":0,"cartr":0,"pay":0,"payr":0},
+  {"code":"gg17-爪形挂钩-黄铜色*2","exp":3711,"vis":90,"ctr":2.43,"cart":8,"cartq":9,"cartr":8.89,"pay":0,"payr":0},
+  {"code":"gg19-天鹅挂钩-锈色","exp":402,"vis":17,"ctr":4.23,"cart":1,"cartq":1,"cartr":5.88,"pay":0,"payr":0},
+  {"code":"gg10-1","exp":80279,"vis":2999,"ctr":3.74,"cart":625,"cartq":740,"cartr":20.84,"pay":55,"payr":1.83},
+  {"code":"gg04-1","exp":33567,"vis":1342,"ctr":4.00,"cart":361,"cartq":451,"cartr":26.90,"pay":41,"payr":3.06},
+  {"code":"gg09","exp":33941,"vis":1106,"ctr":3.26,"cart":270,"cartq":331,"cartr":24.41,"pay":40,"payr":3.62},
+  {"code":"gg11","exp":12697,"vis":379,"ctr":2.99,"cart":99,"cartq":111,"cartr":26.12,"pay":19,"payr":5.01},
+  {"code":"gg07","exp":22465,"vis":1056,"ctr":4.71,"cart":119,"cartq":158,"cartr":11.27,"pay":16,"payr":1.52},
+  {"code":"gs03-蝙蝠-黑","exp":1472,"vis":84,"ctr":5.71,"cart":17,"cartq":21,"cartr":20.24,"pay":2,"payr":2.38},
+  {"code":"gg08","exp":11469,"vis":375,"ctr":3.27,"cart":82,"cartq":104,"cartr":21.87,"pay":14,"payr":3.73},
+  {"code":"gg06","exp":9587,"vis":399,"ctr":4.16,"cart":58,"cartq":65,"cartr":14.54,"pay":14,"payr":3.51},
+  {"code":"gg16-公牛挂钩-锈色","exp":3938,"vis":179,"ctr":4.55,"cart":36,"cartq":37,"cartr":20.11,"pay":5,"payr":2.79}
+]
+;
 // 样例数据（与 shein_ops.py --demo 一致）
 var DEMO_RESTOCK=[
  ['供货方号','SKU','上架天数','状态','待开发','良品数','库存','可售天数','系统下单数','建议下单量','申请下单数'],
@@ -3517,23 +3543,61 @@ function analyze(detailRows,stockRows,localRows,srcNote,anaRows){
       for(var k in _bnt){ if(code.indexOf(k)===0&&(!best||k.length>best.length)) best=k; }
       return best?_bnt[best]:'';
     };
-    var _pot2N=0,_relkN=0;
+    // R31i（2026-10-19 22:20）：内嵌《商品分析》截图流量数据（ANA_EMBED）——完整版潜力判定。
+    // 匹配规则：每条 ANA 行分给"最长前缀/精确"的款——内嵌模式 gg16-公牛挂钩-红铜色 精确命中独立款；
+    // 上传①运行时款=gg16（无色后缀）→ 四色行求和归入 gg16；gg11-1 恒归 gg11-1（最长前缀优先，不被 gg11 吃掉）。
+    var _anaByCode={};
+    (function(){
+      (typeof ANA_EMBED!=='undefined'&&ANA_EMBED&&ANA_EMBED.length?ANA_EMBED:[]).forEach(function(a){
+        if(!a||!a.code) return;
+        var best=null;
+        detail.forEach(function(dd){
+          var c=String(dd.code||''); if(!c) return;
+          if(a.code===c){ if(!best||c.length>=best.length) best=c; return; }
+          if(a.code.indexOf(c)===0&&a.code.charAt(c.length)==='-'){ if(!best||c.length>best.length) best=c; }
+        });
+        if(!best) return;
+        var t=_anaByCode[best]=_anaByCode[best]||{exp:0,vis:0,cart:0,cartq:0,pay:0};
+        t.exp+=num(a.exp)||0; t.vis+=num(a.vis)||0; t.cart+=num(a.cart)||0; t.cartq+=num(a.cartq)||0; t.pay+=num(a.pay)||0;
+      });
+    })();
+    var _pot2N=0,_relkN=0,_anaN=0;
     detail.forEach(function(dd){
       if(dd.potential||dd.label==='停/不处理') return;
-      var pv=_basePay(dd.code);
-      if(pv<2||((dd.sales30||0)>=10)) return;
       var _nt=dd.newtag||_baseNewtag(dd.code);
-      if(/新款/.test(dd.tier||'')||/畅销/.test(_nt)){
+      var _inWin=/新款/.test(dd.tier||'')||/畅销/.test(_nt);
+      var an=_anaByCode[dd.code];
+      if(an&&an.exp>0){
+        _anaN++;
+        var _ctr=an.exp>0?100*an.vis/an.exp:0, _cartr=an.vis>0?100*an.cart/an.vis:0;
+        // 完整版潜力判定：曝光≥200 + 点击率≥2% + 加购率≥8% + 近7天销量<3（用户 2026-10-19 22:34 拍板：以近7天为准，30天只作参考；30天<10≈周2.4 折算）
+        if(an.exp>=200&&_ctr>=2&&_cartr>=8&&(dd.s7||0)<3){
+          if(_inWin){
+            dd.potential=true; _pot2N++;
+            dd.action='⚡潜力款（截图流量：曝光'+an.exp+'·点击率'+_ctr.toFixed(1)+'%·加购率'+_cartr.toFixed(1)+'%·近7天才'+Math.round(dd.s7||0)+'单，新品推流窗内流量好销量没起来）：建议小批量测款备货，供素材/请买手报活动要流量。'+dd.action;
+            if(dd.pri==='低') dd.pri='中';
+          }else{
+            dd.relink=true; _relkN++;
+            dd.action='🔁换链重启（截图流量：曝光'+an.exp+'·点击率'+_ctr.toFixed(1)+'%·加购率'+_cartr.toFixed(1)+'%都不差但近7天才'+Math.round(dd.s7||0)+'单，新品推流窗已过）：打折只提转化、提不了曝光。杠杆=申请替换SKC（同款重新上架重吃新品流量窗），旧链降价清仓去化。'+dd.action;
+          }
+        }
+        return;   // 有截图流量数据的款用完整判定，不再走支付率降级（防双标）
+      }
+      // 降级：无截图数据的款继续用支付率代理信号（同样按近7天，用户 2026-10-19 22:34 拍板）
+      var pv=_basePay(dd.code);
+      if(pv<2||((dd.s7||0)>=3)) return;
+      if(_inWin){
         dd.potential=true; _pot2N++;
-        dd.action='⚡转化潜力（支付率'+pv.toFixed(2)+'%·30天才'+Math.round(dd.sales30||0)+'单，新品推流窗内转化好缺曝光）：建议小批量测款备货，供素材/请买手报活动要流量。'+dd.action;
+        dd.action='⚡转化潜力（支付率'+pv.toFixed(2)+'%·近7天才'+Math.round(dd.s7||0)+'单，新品推流窗内转化好缺曝光）：建议小批量测款备货，供素材/请买手报活动要流量。'+dd.action;
         if(dd.pri==='低') dd.pri='中';
-      }else if((dd.sales30||0)<5){   // R31g 收紧：只有销量真低（30天<5单）的老款才标换链，防"备货款正常小销量"误入（gg16 公牛锈色案例）
+      }else if((dd.s7||0)<=1){   // R31i 改近7天口径：7天≤1单（≈原30天<5）才标换链，防正常小销量误入
         dd.relink=true; _relkN++;
-        dd.action='🔁换链重启（支付率'+pv.toFixed(2)+'%但30天才'+Math.round(dd.sales30||0)+'单，新品推流窗已过）：打折/报活动只能提转化、提不了曝光（曝光是系统分配的）。杠杆=申请替换SKC（同款重新上架重吃新品流量窗），旧链接降价清仓去化。'+dd.action;
+        dd.action='🔁换链重启（支付率'+pv.toFixed(2)+'%但近7天才'+Math.round(dd.s7||0)+'单，新品推流窗已过）：打折/报活动只能提转化、提不了曝光（曝光是系统分配的）。杠杆=申请替换SKC（同款重新上架重吃新品流量窗），旧链接降价清仓去化。'+dd.action;
       }
     });
-    if(_pot2N>0) anaNote+=(anaNote?';':'；')+'转化潜力 '+_pot2N+' 款（新品推流窗内·支付率≥2% 且 30天销量<10，支付率来自《商品明细列表》）';
-    if(_relkN>0) anaNote+=(anaNote?';':'；')+'换链重启建议 '+_relkN+' 款（老款高支付低销量·推流窗已过，打折无用，建议替换SKC重开流量窗）';
+    if(_anaN>0) anaNote+=(anaNote?';':'；')+'商品分析截图流量已合并 '+_anaN+' 款（10/12-10/18 近7天，AI 读图+比例交叉校验）';
+    if(_pot2N>0) anaNote+=(anaNote?';':'；')+'潜力款 '+_pot2N+' 款（曝光≥200+点击≥2%+加购≥8%+近7天销量<3）';
+    if(_relkN>0) anaNote+=(anaNote?';':'；')+'换链重启建议 '+_relkN+' 款（流量不差/高支付但销量低·推流窗已过，打折无用，建议替换SKC重开流量窗）';
     var src='基础数据：'+(srcNote||'内嵌22款')+'；系统备货：'+stockSrc+'；本地库存：'+(localRows?'上传文件':'内嵌《进销存统计表(5.15优化)》库存银行')+anaNote;
     render(detail,src);
     status('完成：'+detail.length+' 款 · 已合并系统备货信息 + 本地库存 · 口径近7天',false);
