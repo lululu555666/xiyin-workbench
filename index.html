@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-19 20:09">
+<meta name="build-time" content="2026-10-19 20:15">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 20:09</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-19 20:15</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -566,8 +566,12 @@ tbody tr.total-row:hover{background:#ede9fe}
 #shein td input[type=number]{border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:13px}
 #shein ul{margin:6px 0;padding-left:18px;font-size:13px;color:var(--text2);line-height:1.7}
 #shein .exp-btn{background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;margin:2px 6px 2px 0}
-/* 表头吸顶：顶栏52px，滚动浏览时表头跟随，滚出表格自动隐藏（全站表头通用） */
-thead th{top:var(--th-top,52px) !important;z-index:50 !important;box-shadow:0 2px 4px rgba(15,23,42,.10)}
+/* 表头吸顶（2026-10-19 R31b 修正）：所有表都在 .tbl-wrap 自带滚动容器内滚动，吸顶参照物=容器，top 必须=0。
+   旧值 var(--th-top,52px) 是按"表头贴页面顶栏"设计的，结果把表头整体下推 52~65px——容器矮时（如查询表只搜出1行）
+   表头被推出容器可视区被裁掉 = 用户截图"输入后表头没了"；容器高时表头上方也永远空一条。 */
+thead th{top:0 !important;z-index:50 !important;box-shadow:0 2px 4px rgba(15,23,42,.10)}
+/* 基底 th.sortable{position:relative} 优先级(0-1-1)压过 thead th{position:sticky}(0-0-2)，可排序表头从未生效过 sticky——此处拉回 sticky */
+th.sortable{position:sticky}
 .main{overflow:visible !important}
 #sheinOut thead th{background:#f1f5f9}
 
@@ -2158,6 +2162,26 @@ function mergeStock(detail,stock){
     d.label=c.label; d.action=c.action; d.pri=c.pri; d.dl=c.dl; d.owner=c.owner;
     d.haveSys=has;   // 仅当该款确实在备货信息导出（或内嵌）中才算有系统数据
   }
+  // R31b（用户 2026-10-19：gg15 竖琴"怎么还残留"）：主动停产在同名 *2 两件装货号间传导——
+  // 单装货号 tier=自主停产判「停/不处理」，但 *2 货号系统层次仍是"保证在售款"→ 被误判去化/进水位图。
+  // 只按"同一基底货号（去掉 *2 后相同）"配对，不会波及 gg10/gg10-1 这类不同款。
+  var _baseGrp={};
+  for(var b0=0;b0<detail.length;b0++){
+    var _b=String(detail[b0].code).replace(/\*2$/,'');
+    if(!_baseGrp[_b]) _baseGrp[_b]=[];
+    _baseGrp[_b].push(detail[b0]);
+  }
+  Object.keys(_baseGrp).forEach(function(_bk){
+    var _arr=_baseGrp[_bk];
+    if(_arr.length<2) return;
+    if(_arr.some(function(d0){ return d0.label==='停/不处理'; })){
+      _arr.forEach(function(d0){
+        if(d0.label!=='停/不处理'){
+          d0.label='停/不处理'; d0.action='同款主货号已主动停产：本货号停止申请下单，自然售罄去化'; d0.pri='低'; d0.dl='—'; d0.owner='你';
+        }
+      });
+    }
+  });
   // 本地库存偏低预警（用户确认 2026-10-16：本地剩几件也要给说法，只追加不改写既有结论）
   for(var j=0;j<detail.length;j++){
     var dj=detail[j];
@@ -2373,6 +2397,31 @@ function comboParse(a, code){
   if(/2\s*pcs|2\s*件装|2\s*\*|\*\s*2|-2\s*组/i.test(s)) return {combo:false, multi:2, comps:[_normColor(s)], disp:r.disp};
   return {combo:false, multi:1, comps:[_normColor(s)], disp:r.disp};
 }
+// 色级总量池（R31b，用户拍板 2026-10-19：显示名跟希音属性走，该色总量=单装+组合装叠加；缺口按"件"统一口径）
+// 折算规则=缺口判断核心：组合装每套=各色1件；多件装每套=该色×N件；单装=1件。消耗与库存同乘倍数，单装/组合/多件缺口差异由倍数体现。
+function colorPool(skuList, code){
+  var out={};
+  (skuList||[]).forEach(function(x){
+    var d7=(x.s7/7)||0, d30=(x.s30/30)||0;
+    var daily=(x.s7>0)?d7:((x.s30>0)?d30:0);
+    var ci=comboParse(x.a, code);
+    var _put=function(cn,k,add){
+      if(!out[cn]) out[cn]={daily:0,sh:0,tr:0,from:[]};
+      out[cn][k]+=add;
+    };
+    if(ci.combo){
+      ci.comps.forEach(function(cn){ _put(cn,'daily',daily); _put(cn,'sh',(x.sh||0)); _put(cn,'tr',(x.tr||0)); out[cn].from.push('组合'+x.a+'库存'+(x.sh||0)); });
+    } else if(ci.multi>1){
+      var cn=ci.comps[0];
+      _put(cn,'daily',daily*ci.multi); _put(cn,'sh',(x.sh||0)*ci.multi); _put(cn,'tr',(x.tr||0)*ci.multi);
+      out[cn].from.push(ci.multi+'件装库存'+(x.sh||0)+'套×'+ci.multi+'='+((x.sh||0)*ci.multi)+'件');
+    } else {
+      var cn2=ci.comps[0]||_normColor(x.a);
+      _put(cn2,'daily',daily); _put(cn2,'sh',(x.sh||0)); _put(cn2,'tr',(x.tr||0));
+    }
+  });
+  return out;
+}
 // 归集计算（同款内）：{色名: {extra:折算日均, from:[来源描述]}}
 // 组合装（A+B）每卖1件消耗各组件×1；2件装每卖1件消耗该色×2（自身已计1，额外+1）
 function comboRollup(skuList, code){
@@ -2476,7 +2525,7 @@ function render(detail,src){
 
   // ① 补货数量报告
   h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #2563eb">一、补货下单 · 跌破15天触发线才补，触发后补至30天水位 <button id="sheinS1Tgl" style="float:right;font-size:12px;padding:2px 10px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;cursor:pointer;color:#475569">收起本节 ▲</button></h2><div id="sheinS1Body">';
-  var _wd=detail.filter(function(x){ return x.daily>0 && x.shein!==undefined; })
+  var _wd=detail.filter(function(x){ return x.daily>0 && x.shein!==undefined && x.label!=='停/不处理'; })   // R31b（用户 2026-10-19）：主动停产/退供/清仓款不进水位图（①表已折叠，图里"残留".gg15）
     .map(function(x){ return {c:x, dl:(x.shein+(x.ship||0))/x.daily}; });
   // 库存水位总览 · 单图紧凑版（用户拍板 2026-10-16 晚：一款一条柱，品再多发也不无限下拉；按可售升序，最急在最上）
   var _flat=_wd.slice().sort(function(a,b){ return (a.dl===null?999:a.dl)-(b.dl===null?999:b.dl); });
@@ -2486,12 +2535,14 @@ function render(detail,src){
     W_data.push(w.dl===null?0:Math.min(w.dl,45));
     W_bgs.push(w.dl===null?'#cbd5e1':(w.dl<15?'#dc2626':(w.dl<30?'#d97706':'#059669')));
     var lines=[w.c.code+' ｜ 款级可售约 '+(w.dl===null?'—':w.dl.toFixed(1)+' 天')+' ｜ 希音仓'+w.c.shein+' 在途'+(w.c.ship||0)+' 本地'+w.c.loc+(w.c.restockQty>0?(' ｜ 建议：定制 '+w.c.restockQty+' + 调拨 '+w.c.alloc):' ｜ 暂不补')];
+    var _tp=colorPool(w.c.skuList, w.c.code);   // R31b：与①表口径一致，逐色天数用色池（单装+组合+多件折件）
     (w.c.skuList||[]).forEach(function(x){
       var ci=comboParse(x.a, w.c.code);
-      if(ci.combo||ci.multi>1) return;   // 组合装/多件装不单独显示（用户拍板 2026-10-16 晚）：消耗已归入单装色行
-      var d7=(x.s7/7)||0, d30=(x.s30/30)||0;
-      var cd=(x.s7>0)?d7:((x.s30>0)?d30:0);   // 与主口径一致：纯7天日均，近7天零单退回30天
-      var cdl=(cd>0&&(x.sh!==null&&x.sh!==undefined))?(x.sh/cd):null;
+      if(ci.combo||ci.multi>1) return;   // 组合装/多件装不单独显示（用户拍板 2026-10-16 晚）：已折入色池
+      var _cn=(ci&&ci.comps&&ci.comps.length)?ci.comps[0]:_normColor(x.a);
+      var _p=_tp[_cn];
+      var cd=_p?_p.daily:((x.s7>0)?(x.s7/7):((x.s30>0)?(x.s30/30):0));   // 与主口径一致：纯7天日均，近7天零单退回30天
+      var cdl=(_p&&cd>0&&_p.sh>0)?(_p.sh/cd):null;
       lines.push('└ '+x.a+(ci.disp?('（'+ci.disp+(ci.multi>1?'·'+ci.multi+'件装':'')+'）'):(ci.multi>1?'（'+ci.multi+'件装）':''))+'：'+(cdl===null?'无销量':cdl.toFixed(1)+' 天'+(cdl<15?' ⚠断货风险':(cdl<30?' 关注':''))));
     });
     W_tips.push(lines);
@@ -2514,6 +2565,21 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       var ci=comboParse(x.a, d.code);
       return {a:x.a, s7:x.s7, s30:x.s30, sh:x.sh, tr:x.tr, daily:daily, dl:dl, ci:ci};
     }).sort(function(p,q){ return (p.dl===null?999:p.dl)-(q.dl===null?999:q.dl); });
+    // R31b（用户拍板 2026-10-19）：该色总库存/消耗=单装+组合装+多件装按件数折算叠加（colorPool），
+    // 由该色的"代表行"承接（优先单装行；该色无单装行才由多件装行代表）。缺口沿用既有规则：
+    // 缺口=30×(色池日均+0)−色池库存−色池在途 → 本地实测封顶调拨 → 差额找工厂定制（A口径 15触发/30水位不变）。
+    var _pool=colorPool(d.skuList, d.code);
+    var _claim={};
+    ls.forEach(function(x){ if(x.ci.combo||x.ci.multi>1) return; var cn=(x.ci&&x.ci.comps&&x.ci.comps.length)?x.ci.comps[0]:_normColor(x.a); if(!_claim[cn]) _claim[cn]=x; });
+    ls.forEach(function(x){ if(x.ci.combo||x.ci.multi<2) return; var cn=(x.ci&&x.ci.comps&&x.ci.comps.length)?x.ci.comps[0]:_normColor(x.a); if(!_claim[cn]) _claim[cn]=x; });
+    ls.forEach(function(x){
+      var cn=(x.ci&&x.ci.comps&&x.ci.comps.length)?x.ci.comps[0]:_normColor(x.a);
+      if(_claim[cn]===x){
+        var p=_pool[cn];
+        if(p){ x.daily=Math.round(p.daily*100)/100; x.sh=p.sh; x.tr=p.tr; x.dl=(x.daily>0&&x.sh>0)?(x.sh/x.daily):null; x.poolFrom=p.from; }
+        x.claimed=true;
+      }
+    });
     // 色级分摊（用户拍板 2026-10-16 晚：款级数据对应到颜色细分）：在途/本地/系统建议/定制/调拨按7天日均占比分摊；缺口=30×色级日均−色级SHEIN仓−分摊在途
     var _S=0; ls.forEach(function(x){ if(x.daily>0&&!x.ci.combo) _S+=x.daily; });   // 组合装不分摊（不单独成行，消耗已划入单装行）
     var _ship0=d.ship||0, _loc0=(d.loc===null||d.loc===undefined)?0:d.loc, _alloc0=d.alloc||0;
@@ -2529,7 +2595,7 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       x.allocA=x.daily>0?_alloc0*sh_:null;
       x.cn=(x.ci && x.ci.comps && x.ci.comps.length) ? x.ci.comps[0] : _normColor(x.a);   // 与 comboRollup 的 key 对齐（CODE_MAP 映射行如 '1PC'→'锈色'，_normColor 会剥成空串致匹配失败——用户 2026-10-16 23:45 截图：gg10-1 锈色行未吃到划入消耗）
       var _ex=roll[x.cn];
-      x.extra=(!x.ci.combo && !(x.ci.multi>1) && _ex)?_ex.extra:0;   // 组合装/多件装生产消耗按需求划入单装色行（用户拍板 2026-10-16 晚）
+      x.extra=(x.claimed)?0:((!x.ci.combo && !(x.ci.multi>1) && _ex)?_ex.extra:0);   // R31b：代表行的色池已含全部消耗（组合×1/多件×N），再叠加会重复计；非代表行保留旧划入逻辑
       var _trX=(x.tr!==undefined&&x.tr!==null)?x.tr:(x.shipA||0);   // 新版导出=真实色级在途；旧版按日均占比分摊
       x.gapA=(x.daily>0&&x.sh!==null&&x.sh!==undefined)?Math.max(0,30*(x.daily+x.extra)-x.sh-_trX):null;
       x.realLoc=_realLoc(d.locNames, x.a, d.code);   // 该色实测本地库存（编码色先经 CODE_MAP 转真实色名再匹配）
@@ -2541,10 +2607,10 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       }
     });
     var _fa=function(v,dec){ return (v===null||v===undefined)?'—':(v.toFixed(dec===undefined?0:dec)); };   // 件数一律取整（用户拍板：库存/调拨等件数不出现小数点）
-    var r='<tr><td colspan="13" style="background:#ede9fe;padding:4px 12px 4px 28px;font-size:12px;font-weight:600;color:#5b21b6">▸ 颜色细分（'+d.skuList.length+'色·按可售升序）｜缺口=30×（色级日均+划入消耗）−色级仓−分摊在途｜<b>组合装/多件装不单独成行</b>，消耗已划入单装色行｜本地调拨按实测封顶、差额自动转定制｜本地库存以库存银行实测为准</td></tr>';
+    var r='<tr><td colspan="13" style="background:#ede9fe;padding:4px 12px 4px 28px;font-size:12px;font-weight:600;color:#5b21b6">▸ 颜色细分（'+d.skuList.length+'色·按可售升序）｜<b>该色总量=单装+组合装+多件装按件折算叠加</b>（组合每套=各色1件、多件装每套=该色×N件）｜缺口=30×色池日均−色池库存−在途｜本地调拨按实测封顶、差额自动转定制｜本地库存以库存银行实测为准</td></tr>';
     for(var k=0;k<ls.length;k++){
       var x=ls[k];
-      if(x.ci.combo||x.ci.multi>1) continue;   // 组合装/多件装不单独显示（用户拍板 2026-10-16 晚；23:14 截图复核：2件装行此前漏过滤，一并补齐）：生产消耗已归入单装色行
+      if(!x.claimed) continue;   // R31b：组合装不成行；多件装仅当该色无单装行时由它代表成行（数量已折件）
       var cn=(x.ci && x.ci.comps && x.ci.comps.length) ? x.ci.comps[0] : _normColor(x.a), ci=x.ci;
       var note;
       if(x.dl===null) note='<span style="color:#9ca3af">无销量：不占额度</span>';
@@ -2553,7 +2619,7 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
       else note='<span style="color:#059669">可售'+x.dl.toFixed(1)+'天·健康</span>';
       if(ci.combo) note='<span style="color:#6d28d9">组合装（'+esc(ci.comps.join(' + '))+' 各1）：SHEIN仓独立备货可正常卖；生产需求已归集到对应单装色行。 </span>'+note;
       else if(ci.multi>1) note='<span style="color:#6d28d9">'+ci.multi+'件装：每卖1件消耗该色×'+ci.multi+'。 </span>'+note;
-      else { var _ex2=roll[cn]; if(_ex2&&x.extra>0) note+='<span style="color:#6d28d9"> 含划入消耗+日均'+_ex2.extra.toFixed(2)+'件</span>'; }
+      else { if(x.poolFrom&&x.poolFrom.length) note+='<span style="color:#6d28d9"> 本行数量=该色叠加（'+esc(x.poolFrom.join('＋'))+'）</span>'; }
       if(x.realLoc!==null && x.realLoc<=10 && !ci.combo) note+='<b style="color:#dc2626"> ⚠本地实测'+x.realLoc+'件</b>';
       if(x.locCapped && x.gapA>x.realLoc) note+='<b style="color:#dc2626"> ⚠缺口'+Math.round(x.gapA)+'>本地'+x.realLoc+'：调拨封顶'+x.realLoc+'，另定制'+Math.round(x.gapA-x.realLoc)+'</b>';
       r+='<tr style="background:#faf5ff">'
@@ -2563,7 +2629,7 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
        +'<td>'+_fa(x.tr!==undefined&&x.tr!==null?x.tr:x.shipA)+'</td><td>'+(x.realLoc!==null?('<b'+(x.realLoc<=10?' style="color:#dc2626"':'')+'>'+x.realLoc+'</b>'):'—')+'</td><td>'+_fa(x.sysA,0)+'</td><td>'+(x.ci.combo?'—':_fa(x.gapA,0))+'</td><td style="color:#047857">'+(x.ci.combo?'—':_fa(x.rqA,0))+'</td><td>'+(x.ci.combo?'—':_fa(x.allocA,0))+'</td>'
        +'<td class="act">'+note+'</td></tr>';
     }
-    var _rqS=0,_alS=0; ls.forEach(function(x){ if(x.ci.combo||x.ci.multi>1) return; _rqS+=Math.round(x.rqA||0); _alS+=Math.round(x.allocA||0); });
+    var _rqS=0,_alS=0; ls.forEach(function(x){ if(!x.claimed) return; _rqS+=Math.round(x.rqA||0); _alS+=Math.round(x.allocA||0); });
     d._sub={rq:_rqS, alloc:_alS};   // 色级细分合计（主行显示与①表排序用）
     d._rowsHtml=r;
     return r;
