@@ -7,7 +7,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="build-time" content="2026-10-20 11:39">
+<meta name="build-time" content="2026-10-20 11:40">
 <script src="lib/chart.js?v=2026-10-16 00:09"></script>
 <script src="lib/html2pdf.bundle.js?v=2026-10-16 00:09"></script>
 <script src="lib/xlsx.full.min.js?v=2026-10-16 00:09"></script>
@@ -268,7 +268,7 @@ tbody tr.total-row:hover{background:#ede9fe}
     </span>
   </div>
   <div class="meta">
-    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-20 11:39</span>
+    <span id="buildTimeBadge" style="background:rgba(255,255,255,.15);padding:4px 12px;border-radius:12px">🕒 数据更新：2026-10-20 11:40</span>
     <div class="cloud-sync" id="cloudSync"><span class="cs-dot"></span><span class="cs-text">云端同步状态…</span></div>
     <div class="refresh-badge status-idle" id="refreshBadge"><span class="dot-pulse"></span><span class="badge-text">数据已刷新</span></div>
     <button class="sync-btn" id="syncBtn" onclick="syncData()">&#x1F504; 同步数据</button>
@@ -3156,6 +3156,22 @@ h+='<h3 class="sh"><span class="dot" style="width:7px;height:7px;border-radius:5
 
   // 专项卡片（R32d：④⑤⑥ 全部数据驱动，随每次分析自动刷新）
   h+='<h2 style="margin:26px 0 8px;font-size:17px;font-weight:700;padding-bottom:6px;border-bottom:2px solid #dc2626">四、动销优化专项 · 没单/限单/保证在售款怎么救（促销售动作）</h2>';
+  // R32d：存档恢复路径不经 analyze，dd.an 缺失时用内嵌 ANA_EMBED 回填（最长前缀/精确匹配，与 analyze 同规则；上传的新数据优先，不覆盖）
+  (function(){
+    if(typeof ANA_EMBED==='undefined'||!ANA_EMBED||!ANA_EMBED.length) return;
+    var agg={};
+    ANA_EMBED.forEach(function(a){
+      if(!a||!a.code) return;
+      var best=null;
+      detail.forEach(function(dd){ var c=String(dd.code||''); if(!c) return;
+        if(a.code===c){ if(!best||c.length>=best.length) best=c; return; }
+        if(a.code.indexOf(c)===0&&a.code.charAt(c.length)==='-'){ if(!best||c.length>best.length) best=c; } });
+      if(!best) return;
+      var t=agg[best]=agg[best]||{exp:0,vis:0,cart:0};
+      t.exp+=num(a.exp)||0; t.vis+=num(a.vis)||0; t.cart+=num(a.cart)||0;
+    });
+    detail.forEach(function(dd){ var t=agg[dd.code]; if(t&&t.exp>0&&!dd.an) dd.an={exp:t.exp, ctr:t.vis>0?100*t.vis/t.exp:0, cartr:t.vis>0?100*t.cart/t.vis:0}; });
+  })();
   // ④ 保证在售款去化：自动列出当前所有「保证在售」层级款（含售罄断货红标），按可售天数升序
   var _guar=detail.filter(function(d){ return /保证在售/.test(d.tier||'')||d.label==='保证在售去化'||d.label==='售罄断货·急需补货'; })
     .sort(function(a,b){ var va=(a.daily===null||a.daily===undefined)?9999:a.daily, vb=(b.daily===null||b.daily===undefined)?9999:b.daily; return va-vb; });
